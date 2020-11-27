@@ -9,6 +9,9 @@ intents = discord.Intents.all()
 
 bot = commands.Bot(command_prefix='~', intents=intents)
 
+#Bot Commands
+
+#Join role command
 @bot.command(name = "join <role>", help = "Join game role, Multi worded roles require '' ")
 async def join(ctx, arg):
     member = ctx.message.author
@@ -26,13 +29,7 @@ async def join(ctx, arg):
                 await ctx.send("Role does not exist")
     except:
         await ctx.send("Role does not exist")
-
-#@bot.command()
-#async def rolecolour(ctx, arg):
- #   member = ctx.message.author
-  #  role = discord.utils.get(member.guild.roles, name=arg)
-   # await ctx.send(role.colour)
-
+#Leave role command
 @bot.command(name = "leave <role>", help = "leave game role")
 async def leave(ctx, arg):
     member = ctx.message.author
@@ -51,13 +48,18 @@ async def leave(ctx, arg):
     except:
         await ctx.send("Role does not exist")
 
+#Create role command
 @bot.command(name = "create <role>", help = "Create game role - Must have Manage role Permission")
 @commands.has_permissions(manage_roles=True)
 async def create(ctx, arg):
-    guild = ctx.guild
-    await guild.create_role(name=str(arg.capitalize()),colour=discord.Colour(HEXCOLOUR),mentionable = True)
-    await ctx.send("Role created")
+    try:
+        guild = ctx.guild
+        await guild.create_role(name=str(arg.capitalize()),colour=discord.Colour(HEXCOLOUR),mentionable = True)
+        await ctx.send("Role created")
+    except:
+        await ctx.send("Insufficient Permissions")
 
+#Delete role command
 @bot.command(name = "delete <role> ", help = "Delete game role - Must have Manage role Permission")
 @commands.has_permissions(manage_roles=True)
 async def delete(ctx, arg):
@@ -75,8 +77,9 @@ async def delete(ctx, arg):
             except:
                 await ctx.send("You do not have this role")
     except:
-        await ctx.send("Role does not exist")
+        await ctx.send("Role does not exist or Insufficient Permissions")
 
+#list role member command
 @bot.command(name = "list <role>", help = "list all members in game role")
 async def list(ctx, arg):
     try:
@@ -101,6 +104,7 @@ async def list(ctx, arg):
     except:
         await ctx.send("Role does not exist")
 
+#list role command
 @bot.command(name = "listroles", help = "get all game roles")
 async def listroles(ctx):
     roles = []
@@ -111,7 +115,7 @@ async def listroles(ctx):
 
     
     
-
+#Sets bot activity and posts bot name and id.
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -121,10 +125,7 @@ async def on_ready():
     activities = ['World Domination', 'The Matrix', 'Your Mum']
     await bot.change_presence(activity=discord.Game(name=random.choice(activities)))
 
-@bot.command(name = "test")
-async def test(ctx, arg):
-    await ctx.send(arg)
-
+#Welcomes new member in channel decided in config and assigns welcome role also in config
 @bot.event
 async def on_member_join(member):
     print("Recognised that a member called " + member.name + " joined")
@@ -136,7 +137,9 @@ async def on_member_join(member):
     await member.add_roles(ROLE)
 
                                 
-    
+#Chat Watch
+
+
 @bot.event
 async def on_message(message):
     #stops jeeves responding to itself
@@ -156,16 +159,14 @@ async def on_message(message):
         response = random.choice(brooklyn_99_quotes)
         await message.channel.send(response)
 
-    
+    #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
     if "tenor.com/view" in message.content and CENSOR:
         if message.channel.id == GIF:
             await message.delete()
             await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
             print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
 
-    if message.content == '/\hello':
-        await message.channel.send("Hello")
-        
+    #Pays Respects    
     if message.content == 'f':
         await message.channel.send(message.author.mention + ' sends their respects')
         print (message.channel.id)
