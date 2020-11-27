@@ -11,6 +11,8 @@ bot = commands.Bot(command_prefix='~', intents=intents)
 
 #Bot Commands
 
+#~help gives outline of all main commands
+
 #Join role command
 @bot.command(name = "join <role>", help = "Join game role, Multi worded roles require '' ")
 async def join(ctx, arg):
