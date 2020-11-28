@@ -7,18 +7,29 @@ from config import *
 
 intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix='~', intents=intents)
+bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
 
 #Bot Commands
 
 #~help gives outline of all main commands
 
 #Join role command
-@bot.command(name = "join <role>", help = "Join game role, Multi worded roles require '' ")
+
+#list role command
+@bot.command(name = "listroles", help = "get all game roles")
+async def listroles(ctx):
+    roles = []
+    for role in ctx.guild.roles:
+        if str(role.colour) == str(COLOUR):
+            roles.append("{0.name}".format(role))
+    await ctx.send(', '.join(roles))
+
+
+@bot.command(name = "join",usage = "role", help = "Join game role, Multi worded roles require '' ")
 async def join(ctx, arg):
     member = ctx.message.author
     try:
-        role = discord.utils.get(member.guild.roles, name=arg.capitalize())
+        role = discord.utils.get(member.guild.roles, name=arg.lower())
         if str(role.colour) != str(COLOUR):
            await ctx.send("This role is not a valid game role")
            print(role.colour)
@@ -31,12 +42,13 @@ async def join(ctx, arg):
                 await ctx.send("Role does not exist")
     except:
         await ctx.send("Role does not exist")
+        
 #Leave role command
-@bot.command(name = "leave <role>", help = "leave game role")
+@bot.command(name = "leave",usage = "role", help = "leave game role")
 async def leave(ctx, arg):
     member = ctx.message.author
     try:
-        role = discord.utils.get(member.guild.roles, name=arg.capitalize())
+        role = discord.utils.get(member.guild.roles, name=arg.lower())
         if str(role.colour) != str(COLOUR):
            await ctx.send("This role is not a valid game role")
            print(role.colour)
@@ -51,23 +63,23 @@ async def leave(ctx, arg):
         await ctx.send("Role does not exist")
 
 #Create role command
-@bot.command(name = "create <role>", help = "Create game role - Must have Manage role Permission")
+@bot.command(name = "create", usage = "role", help = "Create game role - Must have Manage role Permission")
 @commands.has_permissions(manage_roles=True)
 async def create(ctx, arg):
     try:
         guild = ctx.guild
-        await guild.create_role(name=str(arg.capitalize()),colour=discord.Colour(HEXCOLOUR),mentionable = True)
+        await guild.create_role(name=arg.lower(),colour=discord.Colour(HEXCOLOUR),mentionable = True)
         await ctx.send("Role created")
     except:
         await ctx.send("Insufficient Permissions")
 
 #Delete role command
-@bot.command(name = "delete <role> ", help = "Delete game role - Must have Manage role Permission")
+@bot.command(name = "delete", usage = "role", help = "Delete game role - Must have Manage role Permission")
 @commands.has_permissions(manage_roles=True)
 async def delete(ctx, arg):
     try:
         guild = ctx.guild
-        role = discord.utils.get(guild.roles, name=arg.capitalize())
+        role = discord.utils.get(guild.roles, name=arg.lower())
         if str(role.colour) != str(COLOUR):
            await ctx.send("This role is not a valid game role")
            print(role.colour)
@@ -82,10 +94,10 @@ async def delete(ctx, arg):
         await ctx.send("Role does not exist or Insufficient Permissions")
 
 #list role member command
-@bot.command(name = "list <role>", help = "list all members in game role")
+@bot.command(name = "list", usage = "role", help = "list all members in game role")
 async def list(ctx, arg):
     try:
-        role = discord.utils.get(ctx.guild.roles, name=arg.capitalize())
+        role = discord.utils.get(ctx.guild.roles, name=arg.lower())
         if str(role.colour) != str(COLOUR):
            await ctx.send("This role is not a valid game role")
            print(role.colour)
@@ -106,14 +118,7 @@ async def list(ctx, arg):
     except:
         await ctx.send("Role does not exist")
 
-#list role command
-@bot.command(name = "listroles", help = "get all game roles")
-async def listroles(ctx):
-    roles = []
-    for role in ctx.guild.roles:
-        if str(role.colour) == str(COLOUR):
-            roles.append("{0.name}".format(role))
-    await ctx.send(', '.join(roles))
+
 
     
     
