@@ -7,8 +7,11 @@ from config import *
 
 intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
 
+bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
+bot.gifspam = 0
+bot.censor = CENSOR
+bot.antispam = ANTISPAM
 #Bot Commands
 
 #~help gives outline of all main commands
@@ -145,8 +148,6 @@ async def on_member_join(member):
 
                                 
 #Chat Watch
-
-
 @bot.event
 async def on_message(message):
     #stops jeeves responding to itself
@@ -167,7 +168,8 @@ async def on_message(message):
         await message.channel.send(response)
 
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
-    if "tenor.com/view" in message.content and CENSOR:
+    #Toggleable in config
+    if ("tenor.com/view" in message.content or ".gif" in message.content) and bot.censor:
         if message.channel.id == GIF:
             await message.delete()
             await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
@@ -178,6 +180,23 @@ async def on_message(message):
         await message.channel.send(message.author.mention + ' sends their respects')
         print (message.channel.id)
 
+    #Gif antispam - Toggleable in config
+    if message.channel.id == GIF and bot.antispam:
+        if bot.gifspam == 0:
+            if ".gif" in message.content or "tenor.com/view" in message.content:
+                bot.gifspam = 1
+        else:
+            if ".gif" in message.content or "tenor.com/view" in message.content:
+                if bot.gifspam >= LIMIT:
+                    bot.gifspam = 1
+                else:
+                    await message.delete()
+                    await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
+                    print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+            else:
+                bot.gifspam += 1
+    
+      
     await bot.process_commands(message)
 
    

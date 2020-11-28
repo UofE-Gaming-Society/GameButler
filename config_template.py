@@ -8,17 +8,24 @@ ROLE = 0
 #Welcome message channel - int
 CHANNEL = 0
 
-#Game Role Colour Hexcode - str
+#Game Role Colour Hexcode Lowercase - str
 COLOUR = ""
 
-#Game Role Hexcode - hexcode
-HEXCOLOUR = 0x000000
+HEXCOLOUR = 0x
 
-#Toggle Tenor Gif censorship - Bool
+#Toggle Tenor Gif censorship
 
 CENSOR = False
 
-#Anti-Gif Channel - Int
+#Anti-Gif Channel - I
 GIF = 0
+
+#Gif Spam Toggle - Bool
+ANTISPAM = False
+
+#GIF spam limit - int
+LIMIT = 6
+
+
 
 
