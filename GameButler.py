@@ -1,10 +1,31 @@
 import discord
 import asyncio
 import random
+import subprocess
+
 from discord.ext import commands
 from config import *
 
 
+copypasta1 = """*jaw drops to floor, eyes pop out of sockets accompanied by trumpets, heart beats out of chest, awooga awooga sound effect, pulls chain on train whistle that has appeared next to head as steam blows out, slams fists on table, rattling any plates, bowls or silverware, whistles loudly, fireworks shoot from top of head, pants loudly as tongue hangs out of mouth, wipes comically large bead of sweat from forehead, clears throat, straightens tie, combs hair* Ahem, you look very lovely."""
+vgmgrules = """**-Rules-** 
+
+
+**1.** Each song has 2 points attached to it. Guessing the song title gives you 1 point, and guessing the game title gives you 1 point. Points are given to the first person to guess one or both of those only. 
+
+**2.** 0.5 points will be given for partial guesses. 
+
+**3.** Search engines are not allowed. Hints will be provided halfway through a song's duration, given that no one has guessed any part of it. 
+
+**4.** Only Western localised titles accepted. No unofficial translations. 
+
+**5.** Punctuation such as full stops, colons, etc... in titles do not matter.
+
+**6.** You can use abbreviations or shortenings for game titles as long as they are recognizable.
+
+**7.** If the game title in question is a numbered sequel then the number will only count after the series has already been guessed. If someone partially guesses a title, then you only need to answer with the other part of the title. 
+
+**8.** All decisions are subject to the committee's discretion."""
 intents = discord.Intents.all()
 
 
@@ -12,11 +33,19 @@ bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
 bot.gifspam = 0
 bot.censor = CENSOR
 bot.antispam = ANTISPAM
+
+
+
+
+
 #Bot Commands
 
 #~help gives outline of all main commands
 
-#Join role command
+#vgmg rules command
+@bot.command(name="vgmg", help = "print vgmg rules")
+async def vgmg(ctx):
+    await ctx.send(vgmgrules)
 
 #list role command
 @bot.command(name = "listroles", help = "get all game roles")
@@ -27,7 +56,7 @@ async def listroles(ctx):
             roles.append("{0.name}".format(role))
     await ctx.send(', '.join(roles))
 
-
+#Join role command
 @bot.command(name = "join",usage = "role", help = "Join game role, Multi worded roles require '' ")
 async def join(ctx, arg):
     member = ctx.message.author
@@ -132,7 +161,7 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-    activities = ['World Domination', 'The Matrix', 'Your Mum']
+    activities = ['World Domination', 'The Matrix', 'Adventure Time', '💯', 'Big Chungus']
     await bot.change_presence(activity=discord.Game(name=random.choice(activities)))
 
 #Welcomes new member in channel decided in config and assigns welcome role also in config
@@ -167,6 +196,15 @@ async def on_message(message):
         response = random.choice(brooklyn_99_quotes)
         await message.channel.send(response)
 
+    #Read Fortune - Requires fortune and cowsay
+    if message.content == "fortune":
+        fortune = subprocess.check_output('fortune | cowsay', shell = True, universal_newlines= True)
+        await message.channel.send("```{}```".format(fortune))
+    
+    if message.content == "moo":
+        moo = subprocess.check_output('cowsay "Have you moo\'d today"', shell = True, universal_newlines= True)
+        await message.channel.send("```{}```".format(moo))
+
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
     #Toggleable in config
     if ("tenor.com/view" in message.content or ".gif" in message.content) and bot.censor:
@@ -178,7 +216,9 @@ async def on_message(message):
     #Pays Respects    
     if message.content == 'f':
         await message.channel.send(message.author.mention + ' sends their respects')
-        print (message.channel.id)
+
+    if message.content == 'awooga':
+        await message.channel.send("{}".format(copypasta1))
 
     #Gif antispam - Toggleable in config
     if message.channel.id == GIF and bot.antispam:
