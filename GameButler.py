@@ -214,13 +214,22 @@ async def on_message(message):
         moo = subprocess.check_output('cowsay "Have you moo\'d today?"', shell = True, universal_newlines= True)
         await message.channel.send("```{}```".format(moo))
 
+    if "meeba" in message.content.lower():
+        await message.channel.send("<:misha:694298077565026396>")
+
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
     #Toggleable in config
-    if ("tenor.com/view" in message.content or ".gif" in message.content) and bot.censor:
+    if ("tenor.com/view" in message.content or "giphy.com/media" in message.content) and bot.censor:
         if message.channel.id == GIF:
             await message.delete()
             await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
             print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+    elif message.attachments != [] and bot.censor:
+        for attachment in message.attachments:
+            if ".gif" in attachment.filename:
+                await message.delete()
+                await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
+                print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
 
     #Pays Respects    
     if message.content.lower() == 'f':
@@ -232,21 +241,35 @@ async def on_message(message):
     #Gif antispam - Toggleable in config
     if message.channel.id == GIF and bot.antispam:
         if bot.gifspam == 0:
-            if ".gif" in message.content or "tenor.com/view" in message.content:
+            if "tenor.com/view" in message.content or "giphy.com/media" in message.content:
                 bot.gifspam = 1
+            elif message.attachments != []:
+                for attachment in message.attachments:
+                    if ".gif" in attachment.filename:
+                        bot.gifspam = 1
         else:
-            if ".gif" in message.content or "tenor.com/view" in message.content:
+            if "tenor.com/view" in message.content or "giphy.com/media" in message.content:
                 if bot.gifspam >= LIMIT:
                     bot.gifspam = 1
                 else:
                     await message.delete()
                     await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
                     print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+            elif message.attachments != []:
+                for attachment in message.attachments:
+                    if ".gif" in attachment.filename:
+                        if bot.gifspam >= LIMIT:
+                            bot.gifspam = 1
+                        else:
+                            await message.delete()
+                            await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
+                            print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
             else:
                 bot.gifspam += 1
-    
-      
+  
     await bot.process_commands(message)
+
+
 
    
 bot.run(TOKEN)
