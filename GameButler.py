@@ -161,7 +161,7 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-    activities = ['World Domination', 'The Matrix', 'Adventure Time', '💯', 'Big Chungus']
+    activities = ['World Domination', 'The Matrix', 'Adventure Time', '💯', 'Dying Inside', 'Poggers', 'All hail creator Chowder']
     await bot.change_presence(activity=discord.Game(name=random.choice(activities)))
 
 #Welcomes new member in channel decided in config and assigns welcome role also in config
@@ -198,13 +198,20 @@ async def on_message(message):
         response = random.choice(brooklyn_99_quotes)
         await message.channel.send(response)
 
+    bmo_quotes = ["Who wants to play video games?","This **does** compute!",
+    "Guess who's late for their video chat.",]
+    
+    if message.content.lower() == 'bmo':
+        response = random.choice(bmo_quotes)
+        await message.channel.send(response)
+
     #Read Fortune - Requires fortune and cowsay
-    if message.content == "fortune":
+    if message.content.lower() == "fortune":
         fortune = subprocess.check_output('fortune | cowsay', shell = True, universal_newlines= True)
         await message.channel.send("```{}```".format(fortune))
     
-    if message.content == "moo":
-        moo = subprocess.check_output('cowsay "Have you moo\'d today"', shell = True, universal_newlines= True)
+    if message.content.lower() == "moo":
+        moo = subprocess.check_output('cowsay "Have you moo\'d today?"', shell = True, universal_newlines= True)
         await message.channel.send("```{}```".format(moo))
 
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
@@ -216,10 +223,10 @@ async def on_message(message):
             print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
 
     #Pays Respects    
-    if message.content == 'f':
+    if message.content.lower() == 'f':
         await message.channel.send(message.author.mention + ' sends their respects')
 
-    if message.content == 'awooga':
+    if message.content.lower() == 'awooga':
         await message.channel.send("{}".format(copypasta1))
 
     #Gif antispam - Toggleable in config
