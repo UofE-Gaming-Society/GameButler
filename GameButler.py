@@ -219,7 +219,7 @@ async def on_message(message):
 
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
     #Toggleable in config
-    if ("tenor.com/view" in message.content or "giphy.com/media" in message.content) and bot.censor:
+    if ("tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content) and bot.censor:
         if message.channel.id == GIF:
             await message.delete()
             await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
@@ -241,14 +241,14 @@ async def on_message(message):
     #Gif antispam - Toggleable in config
     if message.channel.id == GIF and bot.antispam:
         if bot.gifspam == 0:
-            if "tenor.com/view" in message.content or "giphy.com/media" in message.content:
+            if "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content:
                 bot.gifspam = 1
             elif message.attachments != []:
                 for attachment in message.attachments:
                     if ".gif" in attachment.filename:
                         bot.gifspam = 1
         else:
-            if "tenor.com/view" in message.content or "giphy.com/media" in message.content:
+            if "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content:
                 if bot.gifspam >= LIMIT:
                     bot.gifspam = 1
                 else:
