@@ -167,15 +167,20 @@ async def on_ready():
 #Welcomes new member in channel decided in config and assigns welcome role also in config
 @bot.event
 async def on_member_join(member):
-    role = discord.utils.get(member.guild.roles, id=ROLE)
-    channel = discord.utils.get(member.guild.channels, id = CHANNEL)
     print("Recognised that a member called " + member.name + " joined")
-    try: 
+    try:
+        channel = discord.utils.get(member.guild.channels, id = CHANNEL)
         await channel.send("Welcome " + member.mention + " to the server!!!")
         print("Sent message about " + member.name)
+        try:
+            role = discord.utils.get(member.guild.roles, id=ROLE)
+            await member.add_roles(role)
+            print("Assigned role to " + member.name)
+        except:
+            print("Unable to assign role" + role)
     except:
         print("Couldn't message " + member.name)
-    await member.add_roles(role)
+
 
                                 
 #Chat Watch
