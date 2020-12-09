@@ -219,7 +219,7 @@ async def on_message(message):
         moo = subprocess.check_output('cowsay "Have you moo\'d today?"', shell = True, universal_newlines= True)
         await message.channel.send("```{}```".format(moo))
 
-    if "meeba" in message.content.lower():
+    if message.content.lower() == "meeba" or message.content.lower() == "doge":
         await message.channel.send("<:misha:694298077565026396>")
 
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
