@@ -26,6 +26,14 @@ vgmgrules = """**-Rules-**
 **7.** If the game title in question is a numbered sequel then the number will only count after the series has already been guessed. If someone partially guesses a title, then you only need to answer with the other part of the title. 
 
 **8.** All decisions are subject to the committee's discretion."""
+
+lemonade ="""
+```All right, I've been thinking. When life gives you lemons? Don't make lemonade. 
+Make life take the lemons back! Get mad! 'I don't want your damn lemons! What am I supposed to do with these?`
+Demand to see life's manager! Make life rue the day it thought it could give Gurg lemons! Do you know who I am? 
+I'm the man who's going to burn your house down! With the lemons! 
+I'm going to get my engineers to invent a combustible lemon that burns your house down!```"""
+
 intents = discord.Intents.all()
 
 
@@ -203,11 +211,34 @@ async def on_message(message):
         response = random.choice(brooklyn_99_quotes)
         await message.channel.send(response)
 
-    bmo_quotes = ["Who wants to play video games?","This **does** compute!",
-    "Guess who's late for their video chat.",]
+    glados_quotes = ["Oh... It's you.","It's been fun. Don't come back.",
+    "This next test involves turrets. You remember them, right? They're the pale spherical things that are full of bullets. Oh wait. That's you in five seconds.",
+    """
+    Momentum; a function of mass and velocity; is conserved between portals.
+    In layman's terms: speedy thing goes in, speedy thing comes out.""",
+    "Did you know you can donate one or all of your vital organs to the Edinburgh Gamesoc Self-Esteem Fund for Girls? It's true!",
+    "Remember, the Edinburgh Gamesoc \"Bring Your Daughter to Work Day\" is the perfect time to have her tested.",
+    "How are you holding up? BECAUSE I'M A POTATO.",
+    "I think we can put our differences behind us. For science. You monster.",
+    "Let's get mad! If we're going to explode, let's at least explode with some dignity.",
+    "Although the euthanizing process is remarkably painful, eight out of ten Edinburgh Gamesoc Moderators believe that the Companion Cube is most likely incapable of feeling much pain."
+    ]
+
+    lemon_quotes = ["Welcome, gentlemen, to Edinburgh Gamesoc. V-Tubers, Memers, Gamers--you're here because we want the best, and you are it. So: Who is ready to play some games?",
+    "Now, you already met one another on the limo ride over, so let me introduce myself. I'm Gurg. I own the place.",
+    "They say great gaming is built on the shoulders of giants. Not here. At Gamesoc, we do all our gaming from level 1. No hand holding."
+    ]
     
-    if message.content.lower() == 'bmo':
-        response = random.choice(bmo_quotes)
+    if message.content.lower() == 'glados':
+        response = "```" + random.choice(glados_quotes) + "```"
+        await message.channel.send(response)
+    
+    if message.content.lower() == 'lemons':
+        response = "```" + random.choice(lemon_quotes) + "```"
+        await message.channel.send(response)
+    
+    if 'if life gives you lemons' in message.content.lower():
+        response = (lemonade)
         await message.channel.send(response)
 
     #Read Fortune - Requires fortune and cowsay
@@ -219,7 +250,7 @@ async def on_message(message):
         moo = subprocess.check_output('cowsay "Have you moo\'d today?"', shell = True, universal_newlines= True)
         await message.channel.send("```{}```".format(moo))
 
-    if message.content.lower() == "meeba" or message.content.lower() == "doge":
+    if message.content.lower() == "meeba" or message.content.lower() == "misha":
         await message.channel.send("<:misha:694298077565026396>")
 
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
