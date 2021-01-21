@@ -65,7 +65,7 @@ async def listroles(ctx):
     await ctx.send(', '.join(roles))
 
 #Join role command
-@bot.command(name = "join",usage = "role", help = "Join game role, Multi worded roles require '' ")
+@bot.command(name = "join",usage = "role", help = """Join game role, Multi worded roles require " " """)
 async def join(ctx, arg):
     member = ctx.message.author
     try:
@@ -84,7 +84,7 @@ async def join(ctx, arg):
         await ctx.send("Role does not exist")
         
 #Leave role command
-@bot.command(name = "leave",usage = "role", help = "leave game role")
+@bot.command(name = "leave",usage = "role", help = """leave game role, Multi worded roles require " " """)
 async def leave(ctx, arg):
     member = ctx.message.author
     try:
@@ -103,7 +103,7 @@ async def leave(ctx, arg):
         await ctx.send("Role does not exist")
 
 #Create role command
-@bot.command(name = "create", usage = "role", help = "Create game role - Must have Manage role Permission")
+@bot.command(name = "create", usage = "role", help = """Create game role - Must have Manage role Permission, Multi worded roles require " """)
 @commands.has_permissions(manage_roles=True)
 async def create(ctx, arg):
     try:
@@ -114,7 +114,7 @@ async def create(ctx, arg):
         await ctx.send("Insufficient Permissions")
 
 #Delete role command
-@bot.command(name = "delete", usage = "role", help = "Delete game role - Must have Manage role Permission")
+@bot.command(name = "delete", usage = "role", help = """Delete game role - Must have Manage role Permission, Multi worded roles require " " """)
 @commands.has_permissions(manage_roles=True)
 async def delete(ctx, arg):
     try:
@@ -134,7 +134,7 @@ async def delete(ctx, arg):
         await ctx.send("Role does not exist or Insufficient Permissions")
 
 #list role member command
-@bot.command(name = "list", usage = "role", help = "list all members in game role")
+@bot.command(name = "list", usage = "role", help = """list all members in game role, Multi worded roles require " " """)
 async def list(ctx, arg):
     try:
         role = discord.utils.get(ctx.guild.roles, name=arg.lower())
