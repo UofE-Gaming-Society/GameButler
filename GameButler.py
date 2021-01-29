@@ -179,6 +179,7 @@ async def on_member_join(member):
     try:
         channel = discord.utils.get(member.guild.channels, id = CHANNEL)
         await channel.send("Welcome " + member.mention + " to the server!!!")
+        await channel.send("Bot help command is ~help, feel free to use it in bot hell to add yourself to game roles so you can get notified")
         print("Sent message about " + member.name)
         try:
             role = discord.utils.get(member.guild.roles, id=ROLE)
