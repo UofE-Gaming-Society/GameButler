@@ -163,7 +163,7 @@ async def list(ctx, arg):
 async def list(ctx):
     bot.antiads = True
     print (bot.antiads)
-    await ctx.send("Anti Server Invites Toggled")
+    await ctx.send("Anti Server Invites Toggled to: " + bot.antiads)
 
 
 
