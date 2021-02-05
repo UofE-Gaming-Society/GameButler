@@ -161,9 +161,9 @@ async def list(ctx, arg):
 @bot.command(name = "anti_ad",help = "Toggles discord server removal")
 @commands.has_permissions(manage_messages=True)
 async def list(ctx):
-    bot.antiads = True
+    bot.antiads = not bot.antiads
     print (bot.antiads)
-    await ctx.send("Anti Server Invites Toggled to: " + bot.antiads)
+    await ctx.send("Anti Server Invites Toggled to: " + str(bot.antiads))
 
 
 
