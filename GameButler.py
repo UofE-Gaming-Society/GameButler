@@ -215,7 +215,7 @@ async def on_message(message):
         ),
     ]
 
-    if (bot.antiads == True) and ("https://discord.gg/" in message.content.lower()):
+    if (bot.antiads == True) and ("discord.gg" in message.content.lower() or "discord.com/invite" in message.content.lower()):
         await message.delete()
 
     if message.content == '99':
