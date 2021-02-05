@@ -41,7 +41,7 @@ bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
 bot.gifspam = 0
 bot.censor = CENSOR
 bot.antispam = ANTISPAM
-
+bot.antiads = False
 
 
 
@@ -158,6 +158,13 @@ async def list(ctx, arg):
     except:
         await ctx.send("Role does not exist")
 
+@bot.command(name = "anti_ad",help = "Toggles discord server removal")
+@commands.has_permissions(manage_messages=True)
+async def list(ctx):
+    bot.antiads = True
+    print (bot.antiads)
+    await ctx.send("Anti Server Invites Toggled")
+
 
 
     
@@ -207,6 +214,9 @@ async def on_message(message):
             'no doubt no doubt no doubt no doubt.'
         ),
     ]
+
+    if (bot.antiads == True) and ("https://discord.gg/" in message.content.lower()):
+        await message.delete()
 
     if message.content == '99':
         response = random.choice(brooklyn_99_quotes)
