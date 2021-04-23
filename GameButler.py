@@ -177,8 +177,12 @@ async def antispam(ctx):
 @commands.has_permissions(manage_messages=True)
 async def gifban(ctx):
     bot.censor = not bot.censor
+    if bot.antispam:
+        bot.antispam = not bot.antispam
+        await ctx.send("Gif antispam has been disabled")
     print (bot.censor)
     await ctx.send("Gif censorship Toggled to: " + str(bot.censor))
+    
 
     
     
@@ -280,16 +284,15 @@ async def on_message(message):
     #Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
     #Toggleable in config
     if ("tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content) and bot.censor:
-        if message.channel.id == GIF:
-            await message.delete()
-            await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
-            print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+        await message.delete()
+        await message.channel.send("No Gifs in %s %s " % (message.channel.mention, message.author.mention))
+        print ("Gif detected in %s posted by %s" % (message.channel,message.author))
     elif message.attachments != [] and bot.censor:
         for attachment in message.attachments:
             if ".gif" in attachment.filename:
                 await message.delete()
-                await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
-                print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                await message.channel.send("No Gifs in %s %s " % (message.channel.mention, message.author.mention))
+                print ("Gif detected in %s posted by %s" % (message.channel,message.author))
 
     #Pays Respects    
     if message.content.lower() == 'f':
