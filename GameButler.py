@@ -42,6 +42,7 @@ bot.gifspam = 0
 bot.censor = CENSOR
 bot.antispam = ANTISPAM
 bot.antiads = False
+bot.sendErrorMessage = True
 
 
 
@@ -158,14 +159,26 @@ async def list(ctx, arg):
     except:
         await ctx.send("Role does not exist")
 
-@bot.command(name = "anti_ad",help = "Toggles discord server removal")
+@bot.command(name = "anti_ad",help = "Toggles discord server invite removal")
 @commands.has_permissions(manage_messages=True)
-async def list(ctx):
+async def anti_ad(ctx):
     bot.antiads = not bot.antiads
     print (bot.antiads)
     await ctx.send("Anti Server Invites Toggled to: " + str(bot.antiads))
 
+@bot.command(name = "antispam",help = "Toggles gif antispam")
+@commands.has_permissions(manage_messages=True)
+async def antispam(ctx):
+    bot.antispam = not bot.antispam
+    print (bot.antispam)
+    await ctx.send("Gifspam Toggled to: " + str(bot.antispam))
 
+@bot.command(name = "gifban",help = "Toggles gif censorship")
+@commands.has_permissions(manage_messages=True)
+async def gifban(ctx):
+    bot.censor = not bot.censor
+    print (bot.censor)
+    await ctx.send("Gif censorship Toggled to: " + str(bot.censor))
 
     
     
@@ -298,20 +311,30 @@ async def on_message(message):
             if "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content:
                 if bot.gifspam >= LIMIT:
                     bot.gifspam = 1
-                else:
+                    bot.sendErrorMessage = True
+                elif bot.sendErrorMessage:
                     await message.delete()
                     await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
+                    print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                    bot.sendErrorMessage = False
+                else:
+                    await message.delete()
                     print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
             elif message.attachments != []:
                 for attachment in message.attachments:
                     if ".gif" in attachment.filename:
                         if bot.gifspam >= LIMIT:
                             bot.gifspam = 1
-                        else:
+                            bot.sendErrorMessage = True
+                        elif bot.sendErrorMessage:
                             await message.delete()
                             await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
                             print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
-            else:
+                            bot.sendErrorMessage = False
+                        else:
+                            await message.delete()
+                            print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+            elif len(message.content) >= 4:
                 bot.gifspam += 1
   
     await bot.process_commands(message)
