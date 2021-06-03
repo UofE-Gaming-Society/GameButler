@@ -3,15 +3,21 @@
 TOKEN = ""
 
 #Role it can assign on member joining - int
-ROLE = 0
+NEWMEMBERROLE = 0
+
+#Role to assign upon accepting rules
+MEMBERROLE = 0
 
 #Welcome message channel - int
 CHANNEL = 0
 
+#Channel where user can accept rules - int
+RULES = 0
+
 #Game Role Colour Hexcode Lowercase - str
 COLOUR = ""
 
-HEXCOLOUR = 0x
+HEXCOLOUR = 0x000000
 
 #Toggle Tenor Gif censorship
 
