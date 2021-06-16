@@ -203,7 +203,7 @@ async def on_message(message):
         return
 
     if message.channel.id == RULES:
-        if message.content.lower() == "i have read the rules":
+        if "i have read the rules" in message.content.lower():
             member = message.author
             try:
                 role = discord.utils.get(member.guild.roles, id=MEMBERROLE)
