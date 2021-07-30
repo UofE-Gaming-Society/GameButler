@@ -42,10 +42,16 @@ bot.gifspam = 0
 bot.censor = CENSOR
 bot.antispam = ANTISPAM
 bot.antiads = False
-
-
-
-
+#strings
+role_assigned = "Role Assigned"
+roleNotExist = "Role does not exist"
+invalid_gameRole = "Invalid game role"
+doNothaveRole = "You do not have this role"
+delRole = "Role deleted"
+notExistPermission = "Role does not exist or insufficient Permissions"
+role_created = "Role created"
+insufcnt_perms = "Insufficient Permissions"
+bot_cmdHelp = "Bot help command is ~help, feel free to use it in bot hell to add yourself to game roles so you can get notified"
 #Bot Commands
 
 #~help gives outline of all main commands
@@ -71,18 +77,19 @@ async def join(ctx, arg):
     try:
         role = discord.utils.get(member.guild.roles, name=arg.lower())
         if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
+           await ctx.send(invalid_gameRole)
            print(role.colour)
            print(COLOUR)
         else:
             try:
                 await member.add_roles(role)
-                await ctx.send("Role assigned")
+                await ctx.send(role_assigned)
             except:
-                await ctx.send("Role does not exist")
+                await ctx.send(delRole)
     except:
-        await ctx.send("Role does not exist")
-        
+        await ctx.send(roleNotExist)
+    
+#Leave role command
 #Leave role command
 @bot.command(name = "leave",usage = "role", help = """leave game role, Multi worded roles require " " """)
 async def leave(ctx, arg):
@@ -90,17 +97,17 @@ async def leave(ctx, arg):
     try:
         role = discord.utils.get(member.guild.roles, name=arg.lower())
         if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
+           await ctx.send(invalid_gameRole)
            print(role.colour)
            print(COLOUR)
-        else: 
+        else:
             try:
                 await member.remove_roles(role)
                 await ctx.send("Left Role")
             except:
-                await ctx.send("You do not have this role")
+                await ctx.send(doNothaveRole)
     except:
-        await ctx.send("Role does not exist")
+        await ctx.send(roleNotExist)
 
 #Create role command
 @bot.command(name = "create", usage = "role", help = """Create game role - Must have Manage role Permission, Multi worded roles require " """)
@@ -109,9 +116,9 @@ async def create(ctx, arg):
     try:
         guild = ctx.guild
         await guild.create_role(name=arg.lower(),colour=discord.Colour(HEXCOLOUR),mentionable = True)
-        await ctx.send("Role created")
+        await ctx.send(role_created)
     except:
-        await ctx.send("Insufficient Permissions")
+        await ctx.send(insufcnt_perms)
 
 #Delete role command
 @bot.command(name = "delete", usage = "role", help = """Delete game role - Must have Manage role Permission, Multi worded roles require " " """)
@@ -121,42 +128,41 @@ async def delete(ctx, arg):
         guild = ctx.guild
         role = discord.utils.get(guild.roles, name=arg.lower())
         if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
-           print(role.colour)
-           print(COLOUR)
-        else: 
-            try:
-                await role.delete()
-                await ctx.send("Role Deleted")
-            except:
-                await ctx.send("You do not have this role")
-    except:
-        await ctx.send("Role does not exist or Insufficient Permissions")
-
-#list role member command
-@bot.command(name = "list", usage = "role", help = """list all members in game role, Multi worded roles require " " """)
-async def list(ctx, arg):
-    try:
-        role = discord.utils.get(ctx.guild.roles, name=arg.lower())
-        if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
+           await ctx.send(invalid_gRole)
            print(role.colour)
            print(COLOUR)
         else:
             try:
-                members =[]
-                empty = True
-                for member in ctx.message.guild.members:
-                    if role in member.roles:
-                        members.append("{0.name}".format(member))
-                        empty = members == []
-                if empty:
-                    await ctx.send("Nobody has the role {}".format(role.mention))
-                await ctx.send(', '.join(members))
+                await role.delete()
+                await ctx.send(delRole)
             except:
-                await ctx.send("Role does not exist")
+                await ctx.send(doNothaveRole)
     except:
-        await ctx.send("Role does not exist")
+        await ctx.send(notExistPermission)
+
+#list role member command
+@bot.command(name = "list", usage = "role", help = """list all members in game role, Multi worded roles require " " """)
+async def list(ctx, arg):   # no reason for try-except as it is better to see the errors.
+    role = discord.utils.get(ctx.guild.roles, name=arg.lower())
+    if role is None:
+        await ctx.send(roleNotExist)
+        return
+    if str(role.colour) != str(COLOUR):
+        await ctx.send(invalid_gRole)
+        print(role.colour)
+        print(COLOUR)
+
+    else:
+        members =[]
+        for member in ctx.message.guild.members:
+            if role in member.roles:
+                members.append(member.name)
+        if not members:
+            await ctx.send(f"Nobody has the role {role.mention}")
+
+        else:
+            await ctx.send(', '.join(members))
+
 
 @bot.command(name = "anti_ad",help = "Toggles discord server removal")
 @commands.has_permissions(manage_messages=True)
@@ -167,8 +173,8 @@ async def list(ctx):
 
 
 
-    
-    
+
+
 #Sets bot activity and posts bot name and id.
 @bot.event
 async def on_ready():
@@ -177,7 +183,8 @@ async def on_ready():
     print(bot.user.id)
     print('------')
     activities = ['World Domination', 'The Matrix', 'Adventure Time', '💯', 'Dying Inside', 'Poggers', 'All hail creator Chowder']
-    await bot.change_presence(activity=discord.Game(name=random.choice(activities)))
+    rand_activity = random.choice(activities)
+    await bot.change_presence(activity=discord.Game(name=rand_activity))
 
 #Welcomes new member in channel decided in config and assigns welcome role also in config
 @bot.event
@@ -187,14 +194,14 @@ async def on_member_join(member):
         try:
             role = discord.utils.get(member.guild.roles, id=NEWMEMBERROLE)
             await member.add_roles(role)
-            print("Assigned  new member role to " + member.name)
+            print(f"Assigned  new member role to {member.name}")
         except:
-            print("Unable to assign role" + role)
+            print(f"Unable to assign role {role}")
     except:
-        print("Couldn't message " + member.name)
+        print(f"Couldn't message {member.name}")
 
 
-                                
+
 #Chat Watch
 @bot.event
 async def on_message(message):
@@ -208,7 +215,7 @@ async def on_message(message):
             try:
                 role = discord.utils.get(member.guild.roles, id=MEMBERROLE)
                 await member.add_roles(role)
-                print("Assigned role to " + member.name)
+                print(f"Assigned role to {member.name} ")
                 try:
                     newrole = discord.utils.get(member.guild.roles, id=NEWMEMBERROLE)
                     await member.remove_roles(newrole)
@@ -216,12 +223,11 @@ async def on_message(message):
                     print("Unable to remove role")
 
                 channel = discord.utils.get(message.author.guild.channels, id = CHANNEL)
-                await channel.send("Welcome " + message.author.mention + " to the server!!!")
-                await channel.send("Bot help command is ~help, feel free to use it in bot hell to add yourself to game roles so you can get notified")
-                print("Sent message about " + message.author.name)
+                await channel.send(f"Welcome {message.author.mention} to the server!!!")
+                await channel.send(bot_cmdHelp)
+                print(f"Sent message about {message.author.name}")
             except:
-                print("Unable to assign role" + role)
-            
+                print(f"Unable to assign role {role}")
 
     #funny test function - quote b99
     brooklyn_99_quotes = [
@@ -257,24 +263,24 @@ async def on_message(message):
     "Now, you already met one another on the limo ride over, so let me introduce myself. I'm Gurg. I own the place.",
     "They say great gaming is built on the shoulders of giants. Not here. At Gamesoc, we do all our gaming from level 1. No hand holding."
     ]
-    
+
     if message.content.lower() == 'glados':
         response = "```" + random.choice(glados_quotes) + "```"
         await message.channel.send(response)
-    
+
     if message.content.lower() == 'lemons':
         response = "```" + random.choice(lemon_quotes) + "```"
         await message.channel.send(response)
-    
+
     if 'if life gives you lemons' in message.content.lower():
         response = (lemonade)
-        await message.channel.send(response)
+         await message.channel.send(response)
 
     #Read Fortune - Requires fortune and cowsay
     if message.content.lower() == "fortune":
         fortune = subprocess.check_output('fortune | cowsay', shell = True, universal_newlines= True)
         await message.channel.send("```{}```".format(fortune))
-    
+
     if message.content.lower() == "moo":
         moo = subprocess.check_output('cowsay "Have you moo\'d today?"', shell = True, universal_newlines= True)
         await message.channel.send("```{}```".format(moo))
@@ -298,10 +304,10 @@ async def on_message(message):
 
     #Pays Respects    
     if message.content.lower() == 'f':
-        await message.channel.send(message.author.mention + ' sends their respects')
+        await message.channel.send(f"{message.author.mention} sends their respects")
 
     if message.content.lower() == 'awooga':
-        await message.channel.send("{}".format(copypasta1))
+        await message.channel.send(f"{copypasta1}")
 
     #Gif antispam - Toggleable in config
     if message.channel.id == GIF and bot.antispam:
@@ -331,10 +337,10 @@ async def on_message(message):
                             print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
             else:
                 bot.gifspam += 1
-  
+
     await bot.process_commands(message)
 
 
 
-   
+
 bot.run(TOKEN)
