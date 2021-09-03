@@ -8,24 +8,25 @@ from config import *
 
 
 copypasta1 = """*jaw drops to floor, eyes pop out of sockets accompanied by trumpets, heart beats out of chest, awooga awooga sound effect, pulls chain on train whistle that has appeared next to head as steam blows out, slams fists on table, rattling any plates, bowls or silverware, whistles loudly, fireworks shoot from top of head, pants loudly as tongue hangs out of mouth, wipes comically large bead of sweat from forehead, clears throat, straightens tie, combs hair* Ahem, you look very lovely."""
-vgmgrules = """**-Rules-** 
+vgmgrules = """**-Rules-**  
 
+1. Each song has 2 points attached to it. Guessing the song title gives you 1 point, and guessing the game title gives you 1 point.
 
-**1.** Each song has 2 points attached to it. Guessing the song title gives you 1 point, and guessing the game title gives you 1 point. Points are given to the first person to guess one or both of those only. 
+2. 0.5 points will be given for partial guesses. 
 
-**2.** 0.5 points will be given for partial guesses. 
+3. Search engines are not allowed. Hints will be given half way through the song.
 
-**3.** Search engines are not allowed. Hints will be provided halfway through a song's duration, given that no one has guessed any part of it. 
+4. Only Western localised titles accepted. No unofficial translations. 
 
-**4.** Only Western localised titles accepted. No unofficial translations. 
+5. Punctuation such as full stops, colons, etc... in titles do not matter.
 
-**5.** Punctuation such as full stops, colons, etc... in titles do not matter.
+6. You can use abbreviations or shortenings for game titles as long as they are recognizable.
 
-**6.** You can use abbreviations or shortenings for game titles as long as they are recognizable.
+7. Please try to guess the entire title, including its number in the series if it is part of one.
 
-**7.** If the game title in question is a numbered sequel then the number will only count after the series has already been guessed. If someone partially guesses a title, then you only need to answer with the other part of the title. 
+8. All decisions are subject to committee discretion.
 
-**8.** All decisions are subject to the committee's discretion."""
+9. Submit your final answers in a text document to a committee member or helper when the game is over and it will be marked!!"""
 
 lemonade ="""
 ```All right, I've been thinking. When life gives you lemons? Don't make lemonade. 
@@ -42,6 +43,7 @@ bot.gifspam = 0
 bot.censor = CENSOR
 bot.antispam = ANTISPAM
 bot.antiads = False
+bot.sendErrorMessage = True
 
 
 
@@ -158,17 +160,30 @@ async def list(ctx, arg):
     except:
         await ctx.send("Role does not exist")
 
-@bot.command(name = "anti_ad",help = "Toggles discord server removal")
+@bot.command(name = "anti_ad",help = "Toggles discord server invite removal")
 @commands.has_permissions(manage_messages=True)
-async def list(ctx):
+async def anti_ad(ctx):
     bot.antiads = not bot.antiads
     print (bot.antiads)
     await ctx.send("Anti Server Invites Toggled to: " + str(bot.antiads))
 
+@bot.command(name = "antispam",help = "Toggles gif antispam")
+@commands.has_permissions(manage_messages=True)
+async def antispam(ctx):
+    bot.antispam = not bot.antispam
+    print (bot.antispam)
+    await ctx.send("Gifspam Toggled to: " + str(bot.antispam))
 
-
-    
-    
+@bot.command(name = "gifban",help = "Toggles gif censorship")
+@commands.has_permissions(manage_messages=True)
+async def gifban(ctx):
+    bot.censor = not bot.censor
+    if bot.antispam:
+        bot.antispam = not bot.antispam
+        await ctx.send("Gif antispam has been disabled")
+    print (bot.censor)
+    await ctx.send("Gif censorship Toggled to: " + str(bot.censor))
+  
 #Sets bot activity and posts bot name and id.
 @bot.event
 async def on_ready():
@@ -316,20 +331,31 @@ async def on_message(message):
             if "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content:
                 if bot.gifspam >= LIMIT:
                     bot.gifspam = 1
-                else:
+                    bot.sendErrorMessage = True
+                elif bot.sendErrorMessage:
                     await message.delete()
                     await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
                     print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                    bot.sendErrorMessage = False
+                else:
+                    await message.delete()
+                    print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                    
             elif message.attachments != []:
                 for attachment in message.attachments:
                     if ".gif" in attachment.filename:
                         if bot.gifspam >= LIMIT:
                             bot.gifspam = 1
-                        else:
+                            bot.sendErrorMessage = True
+                        elif bot.sendErrorMessage:
                             await message.delete()
                             await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
                             print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
-            else:
+                            bot.sendErrorMessage = False
+                         else:
+                            await message.delete()
+                            print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+            elif len(message.content) >= 4:
                 bot.gifspam += 1
   
     await bot.process_commands(message)
