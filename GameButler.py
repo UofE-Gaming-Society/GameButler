@@ -352,7 +352,7 @@ async def on_message(message):
                             await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
                             print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
                             bot.sendErrorMessage = False
-                         else:
+                        else:
                             await message.delete()
                             print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
             elif len(message.content) >= 4:
