@@ -232,7 +232,8 @@ async def on_message(message):
 
                 channel = discord.utils.get(message.author.guild.channels, id = CHANNEL)
                 await channel.send("Welcome " + message.author.mention + " to the server!!!")
-                await channel.send("Bot help command is ~help, feel free to use it in bot hell to add yourself to game roles so you can get notified")
+                await channel.send("Bot help command is ~help, feel free to use it in <#" + BOTCHANNEL + "> to add yourself to game roles so you can get notified")
+                await channel.sent("React to the relevent messages in <#" + ROLECHANNEL + "> to give yourself access to various channels on the server")
                 print("Sent message about " + message.author.name)
             except:
                 print("Unable to assign role" + role)
