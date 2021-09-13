@@ -11,6 +11,14 @@ MEMBERROLE = 0
 #Welcome message channel - int
 CHANNEL = 0
 
+#Bot command channel id - int
+
+BOTCHANNEL = 0
+
+#Role selection channel id - int
+
+ROLECHANNEL = 0
+
 #Channel where user can accept rules - int
 RULES = 0
 
