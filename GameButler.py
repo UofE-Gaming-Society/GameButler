@@ -236,7 +236,7 @@ async def on_message(message):
                 await channel.sent("React to the relevent messages in <#" + str(ROLECHANNEL) + "> to give yourself access to various channels on the server")
                 print("Sent message about " + message.author.name)
             except:
-                print("Unable to assign role" + role)
+                print("Unable to assign role")
             
 
     #funny test function - quote b99
