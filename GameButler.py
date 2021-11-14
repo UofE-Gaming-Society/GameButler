@@ -217,6 +217,9 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
+    if message.author.id == 381756083028361220 & message.channel.id == 369207326101602304:
+        await message.channel.send("Moderation Rating: ", random.randint(0,9), "/10")
+        
     if message.channel.id == RULES:
         if "i have read the rules" in message.content.lower():
             member = message.author
@@ -232,11 +235,10 @@ async def on_message(message):
 
                 channel = discord.utils.get(message.author.guild.channels, id = CHANNEL)
                 await channel.send("Welcome " + message.author.mention + " to the server!!!")
-                await channel.send("Bot help command is ~help, feel free to use it in <#" + str(BOTCHANNEL) + "> to add yourself to game roles so you can get notified")
-                await channel.send("React to the relevent messages in <#" + str(ROLECHANNEL) + "> to give yourself access to various channels on the server")
+                await channel.send("Bot help command is ~help, feel free to use it in bot hell to add yourself to game roles so you can get notified")
                 print("Sent message about " + message.author.name)
             except:
-                print("Unable to assign role")
+                print("Unable to assign role" + role)
             
 
     #funny test function - quote b99
