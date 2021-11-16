@@ -217,9 +217,9 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.author.id == 381756083028361220 & message.channel.id == 369207326101602304:
+    if (message.author.id == 381756083028361220) and (message.channel.id == 369207326101602304):
         await message.channel.send("Moderation Rating: ", random.randint(0,9), "/10")
-        
+
     if message.channel.id == RULES:
         if "i have read the rules" in message.content.lower():
             member = message.author
@@ -235,10 +235,11 @@ async def on_message(message):
 
                 channel = discord.utils.get(message.author.guild.channels, id = CHANNEL)
                 await channel.send("Welcome " + message.author.mention + " to the server!!!")
-                await channel.send("Bot help command is ~help, feel free to use it in bot hell to add yourself to game roles so you can get notified")
+                await channel.send("Bot help command is ~help, feel free to use it in <#" + str(BOTCHANNEL) + "> to add yourself to game roles so you can get notified")
+                await channel.send("React to the relevent messages in <#" + str(ROLECHANNEL) + "> to give yourself access to various channels on the server")
                 print("Sent message about " + message.author.name)
             except:
-                print("Unable to assign role" + role)
+                print("Unable to assign role")
             
 
     #funny test function - quote b99
@@ -304,9 +305,9 @@ async def on_message(message):
     #Toggleable in config
     if ("tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content) and bot.censor:
         if message.channel.id == GIF:
-            await message.delete()
-            await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
-            print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                await message.delete()
+                await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
+                print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
     elif message.attachments != [] and bot.censor:
         for attachment in message.attachments:
             if ".gif" in attachment.filename:
