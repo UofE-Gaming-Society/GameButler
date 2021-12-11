@@ -2,6 +2,7 @@ import discord
 import asyncio
 import random
 import subprocess
+import time 
 
 from discord.ext import commands
 from config import *
@@ -44,7 +45,7 @@ bot.censor = CENSOR
 bot.antispam = ANTISPAM
 bot.antiads = False
 bot.sendErrorMessage = True
-
+LAST_GIF_TIME = time.time()
 
 
 
@@ -348,17 +349,14 @@ async def on_message(message):
             elif message.attachments != []:
                 for attachment in message.attachments:
                     if ".gif" in attachment.filename:
-                        if bot.gifspam >= LIMIT:
+                        if time.time() < LAST_GIF_TIME + 10:
                             bot.gifspam = 1
-                            bot.sendErrorMessage = True
-                        elif bot.sendErrorMessage:
                             await message.delete()
                             await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
                             print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
                             bot.sendErrorMessage = False
-                        else:
-                            await message.delete()
-                            print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                        LAST_GIF_TIME = time.time() 
+                 
             elif len(message.content) >= 4:
                 bot.gifspam += 1
   
