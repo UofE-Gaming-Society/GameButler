@@ -22,9 +22,9 @@ async def executeRoleCommand(ctx: SlashContext, role: Role, f: Callable[[SlashCo
             await f(ctx, role)
             if successMessage != None and len(successMessage) > 0:
                 await ctx.send(successMessage)
-    except:
+    except Exception as e:
         await ctx.send("An error occured")
-        await log(f"An error occured when {ctx.author.mention} attempted to do something with {role.mention}")
+        await log(f"An error occured when {ctx.author.mention} attempted to do something with {role.mention}: {e}")
 
 def messageHasGif(message: Message):
     return "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content

@@ -2,43 +2,19 @@ import asyncio
 import random
 import subprocess
 
+import os
+from dotenv import load_dotenv
+
 import discord
 from discord.ext import commands
-from discord_slash import SlashContext, SlashCommand, manage_commands
 import discord_slash
+from discord_slash import SlashContext, SlashCommand, manage_commands
 
 from config import *
-
 from helper import *
+from quotes import *
+from commands import *
 
-
-copypasta1 = """*jaw drops to floor, eyes pop out of sockets accompanied by trumpets, heart beats out of chest, awooga awooga sound effect, pulls chain on train whistle that has appeared next to head as steam blows out, slams fists on table, rattling any plates, bowls or silverware, whistles loudly, fireworks shoot from top of head, pants loudly as tongue hangs out of mouth, wipes comically large bead of sweat from forehead, clears throat, straightens tie, combs hair* Ahem, you look very lovely."""
-vgmgrules = """**-Rules-**  
-
-1. Each song has 2 points attached to it. Guessing the song title gives you 1 point, and guessing the game title gives you 1 point.
-
-2. 0.5 points will be given for partial guesses. 
-
-3. Search engines are not allowed. Hints will be given half way through the song.
-
-4. Only Western localised titles accepted. No unofficial translations. 
-
-5. Punctuation such as full stops, colons, etc... in titles do not matter.
-
-6. You can use abbreviations or shortenings for game titles as long as they are recognizable.
-
-7. Please try to guess the entire title, including its number in the series if it is part of one.
-
-8. All decisions are subject to committee discretion.
-
-9. Submit your final answers in a text document to a committee member or helper when the game is over and it will be marked!!"""
-
-lemonade ="""
-```All right, I've been thinking. When life gives you lemons? Don't make lemonade. 
-Make life take the lemons back! Get mad! 'I don't want your damn lemons! What am I supposed to do with these?`
-Demand to see life's manager! Make life rue the day it thought it could give Gurg lemons! Do you know who I am? 
-I'm the man who's going to burn your house down! With the lemons! 
-I'm going to get my engineers to invent a combustible lemon that burns your house down!```"""
 
 intents = discord.Intents.all()
 
@@ -49,7 +25,6 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
-slash = SlashCommand(bot, sync_commands=True)
 
 
 bot.gifspam = 0
@@ -58,195 +33,8 @@ bot.antispam = ANTISPAM
 bot.antiads = False
 bot.sendErrorMessage = True
 
+setupBotCommands(bot)
 
-#Bot Commands
-
-#~help gives outline of all main commands
-
-#vgmg rules command
-@slash.slash(name="vgmg", description="Display VGMG rules", guild_ids=[GUILD_ID])
-async def vgmg(ctx):
-    await ctx.send(vgmgrules)
-
-#list role command
-@slash.slash(name="listroles", description="get all game rolls", guild_ids=[GUILD_ID])
-async def listroles(ctx: SlashContext):
-    roles = [ "{0.name}".format(role) for role in ctx.guild.roles if isGameRole(role) ]
-    await ctx.send(', '.join(roles))
-
-#Join role command
-@slash.slash(
-    name = "join",
-    description="Join game role",
-    options=[
-        manage_commands.create_option(
-            name="role",
-            description="Name of game role",
-            option_type=8, # role
-            required=True
-        )
-    ],
-    guild_ids=[GUILD_ID]
-)
-async def join(ctx: SlashContext, role: discord.Role):
-    await executeRoleCommand(
-        ctx,
-        role,
-        lambda c, r : c.author.add_roles(r),
-        "Role assigned",
-        "This is not a valid game role"
-    )
-        
-#Leave role command
-@slash.slash(
-    name="leave",
-    description="Leave game role",
-    options=[
-        manage_commands.create_option(
-            name="role",
-            description="Name of game role",
-            option_type=8, # role
-            required=True
-        )
-    ],
-    guild_ids=[GUILD_ID]
-)
-async def leave(ctx: SlashContext, role: discord.Role):
-    await executeRoleCommand(
-        ctx,
-        role,
-        lambda c, r : c.author.remove_roles(r),
-        "Role removed",
-        "You do not have this role"
-    )
-
-#Create role command
-@slash.slash(
-    name="create",
-    description="Create game role - Must have Manage role Permission",
-    options=[
-        manage_commands.create_option(
-            name="role",
-            description="Name of game role",
-            option_type=3, # string
-            required=True
-        )
-    ],
-    guild_ids=[GUILD_ID]
-)
-@commands.has_permissions(manage_roles=True)
-async def create(ctx: SlashContext, role: str):
-    role = role.lower()
-    try:
-        if not ctx.author.guild_permissions.manage_roles:
-            await ctx.send("You have insufficient permissions to modify roles")
-        else:
-            # check if role with same name already exists
-            if any([ role == r.name for r in ctx.guild.roles ]):
-                await ctx.send(f"{role} already exists")
-            
-            newRole: Role = await ctx.guild.create_role(name=role, colour=discord.Colour(HEXCOLOUR), mentionable=True)
-            await ctx.send(f"{newRole.mention} role created")
-            await log(f"{ctx.author.mention} created {newRole.mention}")
-    except:
-        await ctx.send("An error occurred")
-        await log(f"An error occured when {ctx.author.mention} attempted to create a role called {role}")
-
-#Delete role command
-@slash.slash(
-    name="delete",
-    description="Delete game role - Must have Manage role Permission",
-    options=[
-        manage_commands.create_option(
-            name="role",
-            description="Name of game role",
-            option_type=8, # role
-            required=True
-        )
-    ],
-    guild_ids=[GUILD_ID]
-)
-@commands.has_permissions(manage_roles=True)
-async def delete(ctx: SlashContext, role: discord.Role):
-    if ctx.author.guild_permissions.manage_roles():
-        await executeRoleCommand(
-            ctx,
-            role,
-            lambda c, r : r.delete(f"Deleted by {c.author}"),
-            "Role deleted",
-            "This is not a valid game role"
-        )
-    else:
-        await ctx.send("You have insufficient permissions")
-
-#list role member command
-@slash.slash(
-    name="list",
-    description="List all members in game role",
-    options=[
-        manage_commands.create_option(
-            name="role",
-            description="Name of game role",
-            option_type=8, # role
-            required=True
-        )
-    ],
-    guild_ids=[GUILD_ID]
-)
-async def list(ctx: SlashContext, role: discord.Role):
-    async def listMembersWithRole(c: SlashContext, r: discord.Role):
-        members = [ member.display_name for member in role.members ]
-        if len(members) == 0:
-            await c.send(f"Nobody has the role {r.mention}")
-        else:
-            await c.send(', '.join(members))
-
-    await executeRoleCommand(
-        ctx,
-        role,
-        lambda c, r : listMembersWithRole(c, r),
-        "",
-        f"Unknown error when attempting to list members with {role.name} role"
-    )
-
-
-
-@slash.slash(
-    name="anti_ad",
-    description="Toggles Discord server invite removal",
-    guild_ids=[GUILD_ID]
-)
-@commands.has_permissions(manage_messages=True)
-async def anti_ad(ctx: SlashContext):
-    bot.antiads = not bot.antiads
-    await log(f"Anti Server Invites Toggled to: {bot.antiads}")
-    await ctx.send(f"Anti Server Invites Toggled to: {bot.antiads}")
-
-@slash.slash(
-    name="antispam",
-    description="Toggles gif antispam",
-    guild_ids=[GUILD_ID]
-)
-@commands.has_permissions(manage_messages=True)
-async def antispam(ctx: SlashContext):
-    bot.antispam = not bot.antispam
-    await log(f"Anti Gifspam Toggled to: {bot.antispam}")
-    await ctx.send(f"Anti Gifspam Toggled to: {bot.antispam}")
-
-@slash.slash(
-    name="gifban",
-    description="Toggles gif censorship",
-    guild_ids=[GUILD_ID]
-)
-@commands.has_permissions(manage_messages=True)
-async def gifban(ctx: SlashContext):
-    bot.censor = not bot.censor
-    if bot.antispam:
-        bot.antispam = not bot.antispam
-        await ctx.send("Gif antispam has been disabled")
-    await log(f"Gif censorship Toggled to: {bot.censor}")
-    await ctx.send(f"Gif censorship Toggled to: {bot.censor}")
-  
 #Sets bot activity and posts bot name and id.
 @bot.event
 async def on_ready():
@@ -425,5 +213,8 @@ async def on_message(message: discord.Message):
                 bot.gifspam += 1
   
     await bot.process_commands(message)
+
+load_dotenv()
+TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot.run(TOKEN)
