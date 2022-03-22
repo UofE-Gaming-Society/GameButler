@@ -1,9 +1,5 @@
-import os
-from dotenv import load_dotenv
-
 import discord
 from discord.ext import commands
-import discord_slash
 from discord_slash import SlashContext, SlashCommand, manage_commands
 
 from config import *
@@ -13,18 +9,9 @@ from quotes import *
 
 intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
-slash = SlashCommand(bot, sync_commands=True)
-
-bot.gifspam = 0
-bot.censor = CENSOR
-bot.antispam = ANTISPAM
-bot.antiads = False
-bot.sendErrorMessage = True
-
-
 def setupBotCommands(bot: commands.Bot):
     slash = SlashCommand(bot, sync_commands=True)
+    butler = bot.get_cog("GameButler")
 
     #vgmg rules command
     @slash.slash(name="vgmg", description="Display VGMG rules", guild_ids=[GUILD_ID])
@@ -32,7 +19,7 @@ def setupBotCommands(bot: commands.Bot):
         await ctx.send(vgmgrules)
 
     #list role command
-    @slash.slash(name="listroles", description="get all game rolls", guild_ids=[GUILD_ID])
+    @slash.slash(name="listroles", description="List all game rolls", guild_ids=[GUILD_ID])
     async def listroles(ctx: SlashContext):
         roles = [ "{0.name}".format(role) for role in ctx.guild.roles if isGameRole(role) ]
         await ctx.send(', '.join(roles))
@@ -164,7 +151,7 @@ def setupBotCommands(bot: commands.Bot):
             if len(members) == 0:
                 await c.send(f"Nobody has the role {r.mention}")
             else:
-                await c.send(', '.join(members))
+                await c.send(f"Members with the {role.name} role: " + ', '.join(members))
 
         await executeRoleCommand(
             ctx,
@@ -175,7 +162,6 @@ def setupBotCommands(bot: commands.Bot):
         )
 
 
-
     @slash.slash(
         name="anti_ad",
         description="Toggles Discord server invite removal",
@@ -183,9 +169,9 @@ def setupBotCommands(bot: commands.Bot):
     )
     @commands.has_permissions(manage_messages=True)
     async def anti_ad(ctx: SlashContext):
-        bot.antiads = not bot.antiads
-        await log(f"Anti Server Invites Toggled to: {bot.antiads}")
-        await ctx.send(f"Anti Server Invites Toggled to: {bot.antiads}")
+        butler.antiads = not butler.antiads
+        await log(f"Anti Server Invites Toggled to: {butler.antiads}")
+        await ctx.send(f"Anti Server Invites Toggled to: {butler.antiads}")
 
     @slash.slash(
         name="antispam",
@@ -194,9 +180,9 @@ def setupBotCommands(bot: commands.Bot):
     )
     @commands.has_permissions(manage_messages=True)
     async def antispam(ctx: SlashContext):
-        bot.antispam = not bot.antispam
-        await log(f"Anti Gifspam Toggled to: {bot.antispam}")
-        await ctx.send(f"Anti Gifspam Toggled to: {bot.antispam}")
+        butler.antispam = not butler.antispam
+        await log(f"Anti Gifspam Toggled to: {butler.antispam}")
+        await ctx.send(f"Anti Gifspam Toggled to: {butler.antispam}")
 
     @slash.slash(
         name="gifban",
@@ -205,10 +191,9 @@ def setupBotCommands(bot: commands.Bot):
     )
     @commands.has_permissions(manage_messages=True)
     async def gifban(ctx: SlashContext):
-        bot.censor = not bot.censor
-        if bot.antispam:
-            bot.antispam = not bot.antispam
+        butler.censor = not butler.censor
+        if butler.antispam:
+            butler.antispam = not butler.antispam
             await ctx.send("Gif antispam has been disabled")
-        await log(f"Gif censorship Toggled to: {bot.censor}")
-        await ctx.send(f"Gif censorship Toggled to: {bot.censor}")
-    
+        await log(f"Gif censorship Toggled to: {butler.censor}")
+        await ctx.send(f"Gif censorship Toggled to: {butler.censor}")
