@@ -64,7 +64,7 @@ bot.sendErrorMessage = True
 #~help gives outline of all main commands
 
 #vgmg rules command
-@slash.slash(name="vgmg", description="print VGMG rules", guild_ids=[GUILD_ID])
+@slash.slash(name="vgmg", description="Display VGMG rules", guild_ids=[GUILD_ID])
 async def vgmg(ctx):
     await ctx.send(vgmgrules)
 
@@ -219,7 +219,7 @@ async def list(ctx: SlashContext, role: discord.Role):
 @commands.has_permissions(manage_messages=True)
 async def anti_ad(ctx: SlashContext):
     bot.antiads = not bot.antiads
-    print(f"Anti Server Invites Toggled to: {bot.antiads}")
+    await log(f"Anti Server Invites Toggled to: {bot.antiads}")
     await ctx.send(f"Anti Server Invites Toggled to: {bot.antiads}")
 
 @slash.slash(
@@ -230,7 +230,7 @@ async def anti_ad(ctx: SlashContext):
 @commands.has_permissions(manage_messages=True)
 async def antispam(ctx: SlashContext):
     bot.antispam = not bot.antispam
-    print(f"Anti Gifspam Toggled to: {bot.antispam}")
+    await log(f"Anti Gifspam Toggled to: {bot.antispam}")
     await ctx.send(f"Anti Gifspam Toggled to: {bot.antispam}")
 
 @slash.slash(
@@ -244,41 +244,38 @@ async def gifban(ctx: SlashContext):
     if bot.antispam:
         bot.antispam = not bot.antispam
         await ctx.send("Gif antispam has been disabled")
-    print(f"Gif censorship Toggled to: {bot.censor}")
+    await log(f"Gif censorship Toggled to: {bot.censor}")
     await ctx.send(f"Gif censorship Toggled to: {bot.censor}")
   
 #Sets bot activity and posts bot name and id.
 @bot.event
 async def on_ready():
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
-    print('------')
-    activities = ['World Domination', 'The Matrix', 'Adventure Time', '💯', 'Dying Inside', 'Poggers', 'All hail creator Chowder']
+    await log('Logged in as')
+    await log(bot.user.name)
+    await log(bot.user.id)
+    await log('------')
+    activities = ['World Domination', 'The Matrix', 'Adventure Time', '💯', 'Dying Inside', 'Poggers', 'Ping @TTChowder']
     await bot.change_presence(activity=discord.Game(name=random.choice(activities)))
 
 #Welcomes new member in channel decided in config and assigns welcome role also in config
 @bot.event
 async def on_member_join(member):
-    print("Recognised that a member called " + member.name + " joined")
+    await log("Recognised that a member called " + member.name + " joined")
     try:
         try:
             role = discord.utils.get(member.guild.roles, id=NEWMEMBERROLE)
             await member.add_roles(role)
-            print("Assigned  new member role to " + member.name)
+            await log("Assigned  new member role to " + member.name)
         except:
-            print("Unable to assign role" + role)
+            await log("Unable to assign role" + role)
     except:
-        print("Couldn't message " + member.name)
+        await log("Couldn't message " + member.name)
 
 
                                 
 #Chat Watch
 @bot.event
-async def on_message(message):
-    print("hi")
-
-    #stops jeeves responding to itself
+async def on_message(message: discord.Message):
     if message.author == bot.user:
         return
 
@@ -291,20 +288,20 @@ async def on_message(message):
             try:
                 role = discord.utils.get(member.guild.roles, id=MEMBERROLE)
                 await member.add_roles(role)
-                print("Assigned role to " + member.name)
+                await log("Assigned role to " + member.name)
                 try:
                     newrole = discord.utils.get(member.guild.roles, id=NEWMEMBERROLE)
                     await member.remove_roles(newrole)
                 except:
-                    print("Unable to remove role")
+                    await log("Unable to remove role")
 
                 channel = discord.utils.get(message.author.guild.channels, id = CHANNEL)
                 await channel.send("Welcome " + message.author.mention + " to the server!!!")
                 await channel.send("Bot help command is ~help, feel free to use it in <#" + str(BOTCHANNEL) + "> to add yourself to game roles so you can get notified")
                 await channel.send("React to the relevent messages in <#" + str(ROLECHANNEL) + "> to give yourself access to various channels on the server")
-                print("Sent message about " + message.author.name)
+                await log("Sent message about " + message.author.name)
             except:
-                print("Unable to assign role")
+                await log("Unable to assign role")
             
 
     #funny test function - quote b99
@@ -372,13 +369,13 @@ async def on_message(message):
         if message.channel.id == GIF:
                 await message.delete()
                 await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
-                print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                await log ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
     elif message.attachments != [] and bot.censor:
         for attachment in message.attachments:
             if ".gif" in attachment.filename:
                 await message.delete()
                 await message.channel.send("No Gifs in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
-                print ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                await log ("Gif detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
 
     #Pays Respects    
     if message.content.lower() == 'f':
@@ -404,11 +401,11 @@ async def on_message(message):
                 elif bot.sendErrorMessage:
                     await message.delete()
                     await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
-                    print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                    await log ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
                     bot.sendErrorMessage = False
                 else:
                     await message.delete()
-                    print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                    await log ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
                     
             elif message.attachments != []:
                 for attachment in message.attachments:
@@ -419,11 +416,11 @@ async def on_message(message):
                         elif bot.sendErrorMessage:
                             await message.delete()
                             await message.channel.send("No Gif spam in %s %s " % (bot.get_channel(GIF).mention, message.author.mention))
-                            print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                            await log ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
                             bot.sendErrorMessage = False
                         else:
                             await message.delete()
-                            print ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
+                            await log ("Gif Spam detected in %s posted by %s" % (bot.get_channel(GIF),message.author))
             elif len(message.content) >= 4:
                 bot.gifspam += 1
   
