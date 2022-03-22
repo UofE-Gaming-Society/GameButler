@@ -42,10 +42,17 @@ I'm going to get my engineers to invent a combustible lemon that burns your hous
 
 intents = discord.Intents.all()
 
-client = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
-slash = SlashCommand(client, sync_commands=True)
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
+slash = SlashCommand(bot, sync_commands=True)
+
+guild_id = 894915425303941150
+
 bot.gifspam = 0
 bot.censor = CENSOR
 bot.antispam = ANTISPAM
@@ -53,19 +60,17 @@ bot.antiads = False
 bot.sendErrorMessage = True
 
 
-
-
 #Bot Commands
 
 #~help gives outline of all main commands
 
 #vgmg rules command
-@slash.slash(name="vgmg", description="print VGMG rules")
+@slash.slash(name="vgmg", description="print VGMG rules", guild_ids=[guild_id])
 async def vgmg(ctx):
     await ctx.send(vgmgrules)
 
 #list role command
-@slash.slash(name="listroles", description="get all game rolls")
+@slash.slash(name="listroles", description="get all game rolls", guild_ids=[guild_id])
 async def listroles(ctx: SlashContext):
     roles = [ "{0.name}".format(role) for role in ctx.guild.roles if isGameRole(role) ]
     await ctx.send(', '.join(roles))
@@ -73,16 +78,16 @@ async def listroles(ctx: SlashContext):
 #Join role command
 @slash.slash(
     name = "join",
-    usage="role",
     description="Join game role",
     options=[
         manage_commands.create_option(
             name="role",
             description="Name of game role",
-            type=8, # role
+            option_type=8, # role
             required=True
         )
-    ]
+    ],
+    guild_ids=[guild_id]
 )
 async def join(ctx: SlashContext, role: discord.Role):
     await executeRoleCommand(
@@ -96,16 +101,16 @@ async def join(ctx: SlashContext, role: discord.Role):
 #Leave role command
 @slash.slash(
     name="leave",
-    usage="role",
     description="Leave game role",
     options=[
         manage_commands.create_option(
             name="role",
             description="Name of game role",
-            type=8, # role
+            option_type=8, # role
             required=True
         )
-    ]
+    ],
+    guild_ids=[guild_id]
 )
 async def leave(ctx: SlashContext, role: discord.Role):
     await executeRoleCommand(
@@ -119,26 +124,34 @@ async def leave(ctx: SlashContext, role: discord.Role):
 #Create role command
 @slash.slash(
     name="create",
-    help="Create game role - Must have Manage role Permission",
+    description="Create game role - Must have Manage role Permission",
     options=[
         manage_commands.create_option(
             name="role",
             description="Name of game role",
-            type=3, # string
+            option_type=3, # string
             required=True
         )
-    ]
+    ],
+    guild_ids=[guild_id]
 )
 @commands.has_permissions(manage_roles=True)
-async def create(ctx: SlashContext, roleName: str):
+async def create(ctx: SlashContext, role: str):
+    role = role.lower()
     try:
-        if ctx.author.guild_permissions.manage_roles():
-            await ctx.guild.create_role(name=roleName.lower(), colour=discord.Colour(HEXCOLOUR), mentionable=True)
-            await ctx.send(f"{roleName} role created")
+        if not ctx.author.guild_permissions.manage_roles:
+            await ctx.send("You have insufficient permissions to modify roles")
         else:
-            await ctx.send("Insufficient Permissions")
+            # check if role with same name already exists
+            if any([ role == r.name for r in ctx.guild.roles ]):
+                await ctx.send(f"{role} already exists")
+            
+            newRole: Role = await ctx.guild.create_role(name=role, colour=discord.Colour(HEXCOLOUR), mentionable=True)
+            await ctx.send(f"{newRole.mention} role created")
+            await log(f"{ctx.author.mention} created {newRole.mention}")
     except:
         await ctx.send("An error occurred")
+        await log(f"An error occured when {ctx.author.mention} attempted to create a role called {role}")
 
 #Delete role command
 @slash.slash(
@@ -148,10 +161,11 @@ async def create(ctx: SlashContext, roleName: str):
         manage_commands.create_option(
             name="role",
             description="Name of game role",
-            type=8, # role
+            option_type=8, # role
             required=True
         )
-    ]
+    ],
+    guild_ids=[guild_id]
 )
 @commands.has_permissions(manage_roles=True)
 async def delete(ctx: SlashContext, role: discord.Role):
@@ -174,10 +188,11 @@ async def delete(ctx: SlashContext, role: discord.Role):
         manage_commands.create_option(
             name="role",
             description="Name of game role",
-            type=8, # role
+            option_type=8, # role
             required=True
         )
-    ]
+    ],
+    guild_ids=[guild_id]
 )
 async def list(ctx: SlashContext, role: discord.Role):
     async def listMembersWithRole(c: SlashContext, r: discord.Role):
@@ -199,7 +214,8 @@ async def list(ctx: SlashContext, role: discord.Role):
 
 @slash.slash(
     name="anti_ad",
-    description="Toggles Discord server invite removal"
+    description="Toggles Discord server invite removal",
+    guild_ids=[guild_id]
 )
 @commands.has_permissions(manage_messages=True)
 async def anti_ad(ctx: SlashContext):
@@ -209,7 +225,8 @@ async def anti_ad(ctx: SlashContext):
 
 @slash.slash(
     name="antispam",
-    description="Toggles gif antispam"
+    description="Toggles gif antispam",
+    guild_ids=[guild_id]
 )
 @commands.has_permissions(manage_messages=True)
 async def antispam(ctx: SlashContext):
@@ -219,7 +236,8 @@ async def antispam(ctx: SlashContext):
 
 @slash.slash(
     name="gifban",
-    description="Toggles gif censorship"
+    description="Toggles gif censorship",
+    guild_ids=[guild_id]
 )
 @commands.has_permissions(manage_messages=True)
 async def gifban(ctx: SlashContext):
@@ -259,6 +277,8 @@ async def on_member_join(member):
 #Chat Watch
 @bot.event
 async def on_message(message):
+    print("hi")
+
     #stops jeeves responding to itself
     if message.author == bot.user:
         return
