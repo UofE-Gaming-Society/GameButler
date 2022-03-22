@@ -51,7 +51,6 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
 slash = SlashCommand(bot, sync_commands=True)
 
-guild_id = 894915425303941150
 
 bot.gifspam = 0
 bot.censor = CENSOR
@@ -65,12 +64,12 @@ bot.sendErrorMessage = True
 #~help gives outline of all main commands
 
 #vgmg rules command
-@slash.slash(name="vgmg", description="print VGMG rules", guild_ids=[guild_id])
+@slash.slash(name="vgmg", description="print VGMG rules", guild_ids=[GUILD_ID])
 async def vgmg(ctx):
     await ctx.send(vgmgrules)
 
 #list role command
-@slash.slash(name="listroles", description="get all game rolls", guild_ids=[guild_id])
+@slash.slash(name="listroles", description="get all game rolls", guild_ids=[GUILD_ID])
 async def listroles(ctx: SlashContext):
     roles = [ "{0.name}".format(role) for role in ctx.guild.roles if isGameRole(role) ]
     await ctx.send(', '.join(roles))
@@ -87,7 +86,7 @@ async def listroles(ctx: SlashContext):
             required=True
         )
     ],
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 async def join(ctx: SlashContext, role: discord.Role):
     await executeRoleCommand(
@@ -110,7 +109,7 @@ async def join(ctx: SlashContext, role: discord.Role):
             required=True
         )
     ],
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 async def leave(ctx: SlashContext, role: discord.Role):
     await executeRoleCommand(
@@ -133,7 +132,7 @@ async def leave(ctx: SlashContext, role: discord.Role):
             required=True
         )
     ],
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 @commands.has_permissions(manage_roles=True)
 async def create(ctx: SlashContext, role: str):
@@ -165,7 +164,7 @@ async def create(ctx: SlashContext, role: str):
             required=True
         )
     ],
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 @commands.has_permissions(manage_roles=True)
 async def delete(ctx: SlashContext, role: discord.Role):
@@ -192,7 +191,7 @@ async def delete(ctx: SlashContext, role: discord.Role):
             required=True
         )
     ],
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 async def list(ctx: SlashContext, role: discord.Role):
     async def listMembersWithRole(c: SlashContext, r: discord.Role):
@@ -215,7 +214,7 @@ async def list(ctx: SlashContext, role: discord.Role):
 @slash.slash(
     name="anti_ad",
     description="Toggles Discord server invite removal",
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 @commands.has_permissions(manage_messages=True)
 async def anti_ad(ctx: SlashContext):
@@ -226,7 +225,7 @@ async def anti_ad(ctx: SlashContext):
 @slash.slash(
     name="antispam",
     description="Toggles gif antispam",
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 @commands.has_permissions(manage_messages=True)
 async def antispam(ctx: SlashContext):
@@ -237,7 +236,7 @@ async def antispam(ctx: SlashContext):
 @slash.slash(
     name="gifban",
     description="Toggles gif censorship",
-    guild_ids=[guild_id]
+    guild_ids=[GUILD_ID]
 )
 @commands.has_permissions(manage_messages=True)
 async def gifban(ctx: SlashContext):

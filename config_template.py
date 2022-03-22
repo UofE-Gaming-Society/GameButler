@@ -2,6 +2,9 @@
 #bot token
 TOKEN = ""
 
+#guild ID for registering slash commands
+GUILD_ID = 0
+
 #Role it can assign on member joining - int
 NEWMEMBERROLE = 0
 
