@@ -1,6 +1,6 @@
 import discord
 import discord_slash
-from discord import Role
+from discord import Role, Message
 from discord_slash import SlashContext, SlashCommand, manage_commands
 
 from config import *
@@ -25,3 +25,15 @@ async def executeRoleCommand(ctx: SlashContext, role: Role, f: Callable[[SlashCo
     except:
         await ctx.send("An error occured")
         await log(f"An error occured when {ctx.author.mention} attempted to do something with {role.mention}")
+
+def messageHasGif(message: Message):
+    return "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content
+    # unfinished below here
+    gifEmbeds = ["gifv"]
+    gifFileTypes = ["gif"]
+    gifSites = ["giphy.com/media", "tenor.com/view"]
+    return (
+        any([ embed.type in ["gifv"] or any([ site in embed.url for site in gifSites ]) for embed in message.embeds ]) or 
+        any([ attachment.content_type in gifFileTypes for attachment in message.attachments ]) or
+        any([ any([ site in embed.url for site in gifSites ]) for embed in message.embeds ])
+    )
