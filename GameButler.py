@@ -1,10 +1,15 @@
-import discord
 import asyncio
 import random
 import subprocess
 
+import discord
 from discord.ext import commands
+from discord_slash import SlashContext, SlashCommand, manage_commands
+import discord_slash
+
 from config import *
+
+from helper import *
 
 
 copypasta1 = """*jaw drops to floor, eyes pop out of sockets accompanied by trumpets, heart beats out of chest, awooga awooga sound effect, pulls chain on train whistle that has appeared next to head as steam blows out, slams fists on table, rattling any plates, bowls or silverware, whistles loudly, fireworks shoot from top of head, pants loudly as tongue hangs out of mouth, wipes comically large bead of sweat from forehead, clears throat, straightens tie, combs hair* Ahem, you look very lovely."""
@@ -37,6 +42,8 @@ I'm going to get my engineers to invent a combustible lemon that burns your hous
 
 intents = discord.Intents.all()
 
+client = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
+slash = SlashCommand(client, sync_commands=True)
 
 bot = commands.Bot(command_prefix='~', intents=intents, case_insensitive = True)
 bot.gifspam = 0
@@ -53,136 +60,175 @@ bot.sendErrorMessage = True
 #~help gives outline of all main commands
 
 #vgmg rules command
-@bot.command(name="vgmg", help = "print vgmg rules")
+@slash.slash(name="vgmg", description="print VGMG rules")
 async def vgmg(ctx):
     await ctx.send(vgmgrules)
 
 #list role command
-@bot.command(name = "listroles", help = "get all game roles")
-async def listroles(ctx):
-    roles = []
-    for role in ctx.guild.roles:
-        if str(role.colour) == str(COLOUR):
-            roles.append("{0.name}".format(role))
+@slash.slash(name="listroles", description="get all game rolls")
+async def listroles(ctx: SlashContext):
+    roles = [ "{0.name}".format(role) for role in ctx.guild.roles if isGameRole(role) ]
     await ctx.send(', '.join(roles))
 
 #Join role command
-@bot.command(name = "join",usage = "role", help = """Join game role, Multi worded roles require " " """)
-async def join(ctx, arg):
-    member = ctx.message.author
-    try:
-        role = discord.utils.get(member.guild.roles, name=arg.lower())
-        if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
-           print(role.colour)
-           print(COLOUR)
-        else:
-            try:
-                await member.add_roles(role)
-                await ctx.send("Role assigned")
-            except:
-                await ctx.send("Role does not exist")
-    except:
-        await ctx.send("Role does not exist")
+@slash.slash(
+    name = "join",
+    usage="role",
+    description="Join game role",
+    options=[
+        manage_commands.create_option(
+            name="role",
+            description="Name of game role",
+            type=8, # role
+            required=True
+        )
+    ]
+)
+async def join(ctx: SlashContext, role: discord.Role):
+    await executeRoleCommand(
+        ctx,
+        role,
+        lambda c, r : c.author.add_roles(r),
+        "Role assigned",
+        "This is not a valid game role"
+    )
         
 #Leave role command
-@bot.command(name = "leave",usage = "role", help = """leave game role, Multi worded roles require " " """)
-async def leave(ctx, arg):
-    member = ctx.message.author
-    try:
-        role = discord.utils.get(member.guild.roles, name=arg.lower())
-        if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
-           print(role.colour)
-           print(COLOUR)
-        else: 
-            try:
-                await member.remove_roles(role)
-                await ctx.send("Left Role")
-            except:
-                await ctx.send("You do not have this role")
-    except:
-        await ctx.send("Role does not exist")
+@slash.slash(
+    name="leave",
+    usage="role",
+    description="Leave game role",
+    options=[
+        manage_commands.create_option(
+            name="role",
+            description="Name of game role",
+            type=8, # role
+            required=True
+        )
+    ]
+)
+async def leave(ctx: SlashContext, role: discord.Role):
+    await executeRoleCommand(
+        ctx,
+        role,
+        lambda c, r : c.author.remove_roles(r),
+        "Role removed",
+        "You do not have this role"
+    )
 
 #Create role command
-@bot.command(name = "create", usage = "role", help = """Create game role - Must have Manage role Permission, Multi worded roles require " """)
+@slash.slash(
+    name="create",
+    help="Create game role - Must have Manage role Permission",
+    options=[
+        manage_commands.create_option(
+            name="role",
+            description="Name of game role",
+            type=3, # string
+            required=True
+        )
+    ]
+)
 @commands.has_permissions(manage_roles=True)
-async def create(ctx, arg):
+async def create(ctx: SlashContext, roleName: str):
     try:
-        guild = ctx.guild
-        await guild.create_role(name=arg.lower(),colour=discord.Colour(HEXCOLOUR),mentionable = True)
-        await ctx.send("Role created")
+        if ctx.author.guild_permissions.manage_roles():
+            await ctx.guild.create_role(name=roleName.lower(), colour=discord.Colour(HEXCOLOUR), mentionable=True)
+            await ctx.send(f"{roleName} role created")
+        else:
+            await ctx.send("Insufficient Permissions")
     except:
-        await ctx.send("Insufficient Permissions")
+        await ctx.send("An error occurred")
 
 #Delete role command
-@bot.command(name = "delete", usage = "role", help = """Delete game role - Must have Manage role Permission, Multi worded roles require " " """)
+@slash.slash(
+    name="delete",
+    description="Delete game role - Must have Manage role Permission",
+    options=[
+        manage_commands.create_option(
+            name="role",
+            description="Name of game role",
+            type=8, # role
+            required=True
+        )
+    ]
+)
 @commands.has_permissions(manage_roles=True)
-async def delete(ctx, arg):
-    try:
-        guild = ctx.guild
-        role = discord.utils.get(guild.roles, name=arg.lower())
-        if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
-           print(role.colour)
-           print(COLOUR)
-        else: 
-            try:
-                await role.delete()
-                await ctx.send("Role Deleted")
-            except:
-                await ctx.send("You do not have this role")
-    except:
-        await ctx.send("Role does not exist or Insufficient Permissions")
+async def delete(ctx: SlashContext, role: discord.Role):
+    if ctx.author.guild_permissions.manage_roles():
+        await executeRoleCommand(
+            ctx,
+            role,
+            lambda c, r : r.delete(f"Deleted by {c.author}"),
+            "Role deleted",
+            "This is not a valid game role"
+        )
+    else:
+        await ctx.send("You have insufficient permissions")
 
 #list role member command
-@bot.command(name = "list", usage = "role", help = """list all members in game role, Multi worded roles require " " """)
-async def list(ctx, arg):
-    try:
-        role = discord.utils.get(ctx.guild.roles, name=arg.lower())
-        if str(role.colour) != str(COLOUR):
-           await ctx.send("This role is not a valid game role")
-           print(role.colour)
-           print(COLOUR)
+@slash.slash(
+    name="list",
+    description="List all members in game role",
+    options=[
+        manage_commands.create_option(
+            name="role",
+            description="Name of game role",
+            type=8, # role
+            required=True
+        )
+    ]
+)
+async def list(ctx: SlashContext, role: discord.Role):
+    async def listMembersWithRole(c: SlashContext, r: discord.Role):
+        members = [ member.display_name for member in role.members ]
+        if len(members) == 0:
+            await c.send(f"Nobody has the role {r.mention}")
         else:
-            try:
-                members =[]
-                empty = True
-                for member in ctx.message.guild.members:
-                    if role in member.roles:
-                        members.append("{0.name}".format(member))
-                        empty = members == []
-                if empty:
-                    await ctx.send("Nobody has the role {}".format(role.mention))
-                await ctx.send(', '.join(members))
-            except:
-                await ctx.send("Role does not exist")
-    except:
-        await ctx.send("Role does not exist")
+            await c.send(', '.join(members))
 
-@bot.command(name = "anti_ad",help = "Toggles discord server invite removal")
+    await executeRoleCommand(
+        ctx,
+        role,
+        lambda c, r : listMembersWithRole(c, r),
+        "",
+        f"Unknown error when attempting to list members with {role.name} role"
+    )
+
+
+
+@slash.slash(
+    name="anti_ad",
+    description="Toggles Discord server invite removal"
+)
 @commands.has_permissions(manage_messages=True)
-async def anti_ad(ctx):
+async def anti_ad(ctx: SlashContext):
     bot.antiads = not bot.antiads
-    print (bot.antiads)
-    await ctx.send("Anti Server Invites Toggled to: " + str(bot.antiads))
+    print(f"Anti Server Invites Toggled to: {bot.antiads}")
+    await ctx.send(f"Anti Server Invites Toggled to: {bot.antiads}")
 
-@bot.command(name = "antispam",help = "Toggles gif antispam")
+@slash.slash(
+    name="antispam",
+    description="Toggles gif antispam"
+)
 @commands.has_permissions(manage_messages=True)
-async def antispam(ctx):
+async def antispam(ctx: SlashContext):
     bot.antispam = not bot.antispam
-    print (bot.antispam)
-    await ctx.send("Gifspam Toggled to: " + str(bot.antispam))
+    print(f"Anti Gifspam Toggled to: {bot.antispam}")
+    await ctx.send(f"Anti Gifspam Toggled to: {bot.antispam}")
 
-@bot.command(name = "gifban",help = "Toggles gif censorship")
+@slash.slash(
+    name="gifban",
+    description="Toggles gif censorship"
+)
 @commands.has_permissions(manage_messages=True)
-async def gifban(ctx):
+async def gifban(ctx: SlashContext):
     bot.censor = not bot.censor
     if bot.antispam:
         bot.antispam = not bot.antispam
         await ctx.send("Gif antispam has been disabled")
-    print (bot.censor)
-    await ctx.send("Gif censorship Toggled to: " + str(bot.censor))
+    print(f"Gif censorship Toggled to: {bot.censor}")
+    await ctx.send(f"Gif censorship Toggled to: {bot.censor}")
   
 #Sets bot activity and posts bot name and id.
 @bot.event
