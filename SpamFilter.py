@@ -10,11 +10,11 @@ import quotes
 
 
 class SpamFilter(commands.Cog):
-    antiGifSpamCount = 0
+    anti_gif_spam_count = 0
     censor = config.CENSOR
     antispam = config.ANTISPAM
-    antiAdverts = False
-    sendErrorMessage = True
+    anti_adverts = config.ANTI_ADVERT
+    sendErrorMessage = config.PRINT_ERRORS
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -26,9 +26,9 @@ class SpamFilter(commands.Cog):
     )
     @commands.has_permissions(manage_messages=True)
     async def anti_ad(self, ctx: SlashContext):
-        self.antiAdverts = not self.antiAdverts
-        await helper.log(f"Anti Server Invites Toggled to: {self.antiAdverts}")
-        await ctx.send(f"Anti Server Invites Toggled to: {self.antiAdverts}")
+        self.anti_adverts = not self.anti_adverts
+        await helper.log(f"Anti Server Invites Toggled to: {self.anti_adverts}")
+        await ctx.send(f"Anti Server Invites Toggled to: {self.anti_adverts}")
 
     @cog_ext.cog_slash(
         name="antispam",
@@ -64,26 +64,26 @@ class SpamFilter(commands.Cog):
             return
 
         processes: List[Callable[[Message], None]] = [
-            self.iHaveReadTheRules,
-            self.discordInviteFiltering,
-            self.gifCensorship,
-            self.gifAntiSpam
+            self.i_have_read_the_rules,
+            self.discord_invite_filtering,
+            self.gif_censorship,
+            self.gif_anti_spam
         ]
 
         for process in processes:
             await process(message)
 
-    async def discordInviteFiltering(self, message: Message) -> None:
-        content, author, channel, guild = helper.readMessageProperties(message)
-        if self.antiAdverts and helper.messageHasDiscordInvite(message):
+    async def discord_invite_filtering(self, message: Message) -> None:
+        content, author, channel, guild = helper.read_message_properties(message)
+        if self.anti_adverts and helper.message_has_discord_invite(message):
             await message.delete()
             await helper.log(f"Deleted a advert from {author.mention} in {channel.mention}")
 
-    async def gifCensorship(self, message: Message) -> None:
+    async def gif_censorship(self, message: Message) -> None:
         # Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
         # Toggleable in config
-        content, author, channel, guild = helper.readMessageProperties(message)
-        if helper.messageHasGif(message) and self.censor:
+        content, author, channel, guild = helper.read_message_properties(message)
+        if helper.message_has_gif(message) and self.censor:
             if channel.id == config.GIF:
                 await message.delete()
                 channel: TextChannel = channel
@@ -98,18 +98,18 @@ class SpamFilter(commands.Cog):
                         "No Gifs in %s %s " % (channel.mention, author.mention))
                     await helper.log("Gif detected in %s posted by %s" % (channel.name, author.display_name))
 
-    async def gifAntiSpam(self, message: Message) -> None:
+    async def gif_anti_spam(self, message: Message) -> None:
         # Gif antispam - Toggleable in config
-        content, author, channel, guild = helper.readMessageProperties(message)
+        content, author, channel, guild = helper.read_message_properties(message)
         if channel.id == config.GIF and self.antispam:
-            if not self.antiGifSpamCount:
+            if not self.anti_gif_spam_count:
                 # gif allowed
-                self.antiGifSpamCount: int = helper.messageHasGif(message)
+                self.anti_gif_spam_count: int = helper.message_has_gif(message)
             else:
                 # gif not allowed
-                if helper.messageHasGif(message):
-                    if self.antiGifSpamCount >= config.LIMIT:
-                        self.antiGifSpamCount = 1
+                if helper.message_has_gif(message):
+                    if self.anti_gif_spam_count >= config.LIMIT:
+                        self.anti_gif_spam_count = 1
                         self.sendErrorMessage = True
                     else:
                         await message.delete()
@@ -119,7 +119,7 @@ class SpamFilter(commands.Cog):
                             await channel.send(f"No Gif spam in {channel.mention} {author.mention}")
                             self.sendErrorMessage = False
                 elif len(content) >= 4:
-                    self.antiGifSpamCount += 1
+                    self.anti_gif_spam_count += 1
 
     # Welcomes new member in channel decided in config and assigns welcome role also in config
     @commands.Cog.listener()
@@ -128,30 +128,30 @@ class SpamFilter(commands.Cog):
         try:
             try:
                 guild: Guild = member.guild
-                newMemberRole: Role = guild.get_role(config.NEWMEMBERROLE)
-                await member.add_roles(newMemberRole)
+                new_member_role: Role = guild.get_role(config.NEWMEMBERROLE)
+                await member.add_roles(new_member_role)
                 await helper.log(f"Assigned new member role to {member.name}")
             except:
                 await helper.log(f"Unable to assign new member role to {member.name}")
         except:
             await helper.log(f"Couldn't message {member.name}")
 
-    async def iHaveReadTheRules(self, message: Message) -> None:
-        content, author, channel, guild = helper.readMessageProperties(message)
+    async def i_have_read_the_rules(self, message: Message) -> None:
+        content, author, channel, guild = helper.read_message_properties(message)
         if channel.id == config.RULES:
             if "i have read the rules" in content.lower():
                 try:
-                    memberRole: Role = guild.get_role(config.MEMBERROLE)
-                    await author.add_roles(memberRole)
+                    member_role: Role = guild.get_role(config.MEMBERROLE)
+                    await author.add_roles(member_role)
                     await helper.log(f"Assigned member role to {author.name}")
                     try:
-                        newMemberRole: Role = guild.get_role(config.NEWMEMBERROLE)
-                        await author.remove_roles(newMemberRole)
+                        new_member_role: Role = guild.get_role(config.NEWMEMBERROLE)
+                        await author.remove_roles(new_member_role)
                     except:
                         await helper.log(f"Unable to remove new member role from {author.display_name}")
 
-                    introChannel = guild.get_channel(config.CHANNEL)
-                    await introChannel.send(quotes.introduction(author.mention))
+                    intro_channel = guild.get_channel(config.CHANNEL)
+                    await intro_channel.send(quotes.introduction(author.mention))
                     await helper.log(f"Introduced {author.name}")
                 except:
                     await helper.log("Unable to assign role")

@@ -15,7 +15,7 @@ class GameRoleManager(commands.Cog):
     # list role command
     @cog_ext.cog_slash(name="listroles", description="List all game rolls", guild_ids=config.GUILD_IDS)
     async def listroles(self, ctx: SlashContext):
-        roles = ["{0.name}".format(role) for role in ctx.guild.roles if helper.isGameRole(role)]
+        roles = ["{0.name}".format(role) for role in ctx.guild.roles if helper.is_game_role(role)]
         await ctx.send(', '.join(roles))
 
     # Join role command
@@ -33,7 +33,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def join(self, ctx: SlashContext, role: Role):
-        await helper.executeRoleCommand(
+        await helper.execute_role_command(
             ctx,
             role,
             lambda c, r: c.author.add_roles(r),
@@ -56,7 +56,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def leave(self, ctx: SlashContext, role: Role):
-        await helper.executeRoleCommand(
+        await helper.execute_role_command(
             ctx,
             role,
             lambda c, r: c.author.remove_roles(r),
@@ -89,11 +89,11 @@ class GameRoleManager(commands.Cog):
                 if any([role == r.name for r in ctx.guild.roles]):
                     await ctx.send(f"{role} already exists")
 
-                newRole: Role = await ctx.guild.create_role(name=role,
-                                                            colour=discord.Colour(config.HEXCOLOUR),
-                                                            mentionable=True)
-                await ctx.send(f"{newRole.mention} role created")
-                await helper.log(f"{ctx.author.mention} created {newRole.mention}")
+                new_role: Role = await ctx.guild.create_role(name=role,
+                                                             colour=discord.Colour(config.HEXCOLOUR),
+                                                             mentionable=True)
+                await ctx.send(f"{new_role.mention} role created")
+                await helper.log(f"{ctx.author.mention} created {new_role.mention}")
         except:
             await ctx.send("An error occurred")
             await helper.log(f"An error occured when {ctx.author.mention} attempted to create a role called {role}")
@@ -115,15 +115,15 @@ class GameRoleManager(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def delete(self, ctx: SlashContext, role: Role):
         if ctx.author.guild_permissions.manage_roles:
-            roleName = role.mention
-            await helper.executeRoleCommand(
+            role_name = role.mention
+            await helper.execute_role_command(
                 ctx,
                 role,
                 lambda c, r: r.delete(reason=f"Deleted by {c.author}"),
                 "Role deleted",
                 "This is not a valid game role"
             )
-            await helper.log(f"{ctx.author.mention} deleted {roleName}")
+            await helper.log(f"{ctx.author.mention} deleted {role_name}")
         else:
             await ctx.send("You have insufficient permissions")
 
@@ -142,17 +142,17 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def list(self, ctx: SlashContext, role: Role):
-        async def listMembersWithRole(c: SlashContext, r: Role):
+        async def list_members_with_role(c: SlashContext, r: Role):
             members = [member.display_name for member in role.members]
             if len(members) == 0:
                 await c.send(f"Nobody has the role {r.mention}")
             else:
                 await c.send(f"Members with the {role.name} role: " + ', '.join(members))
 
-        await helper.executeRoleCommand(
+        await helper.execute_role_command(
             ctx,
             role,
-            lambda c, r: listMembersWithRole(c, r),
+            lambda c, r: list_members_with_role(c, r),
             "",
             f"Unknown error when attempting to list members with {role.name} role"
         )

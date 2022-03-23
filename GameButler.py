@@ -40,12 +40,12 @@ class GameButler(commands.Cog):
             await process(message)
 
     async def troll(self, message: Message) -> None:
-        content, author, channel, guild = helper.readMessageProperties(message)
+        content, author, channel, guild = helper.read_message_properties(message)
         if (author.id == 381756083028361220) and (channel.id == 369207326101602304):
             await channel.send(f"Moderation Rating: {random.randint(1, 9)}/10")
 
     async def quotes(self, message: Message) -> None:
-        content, author, channel, guild = helper.readMessageProperties(message)
+        content, author, channel, guild = helper.read_message_properties(message)
 
         mappings: List[Tuple[str, str]] = [
             ("99", random.choice(quotes.brooklyn_99_quotes)),
