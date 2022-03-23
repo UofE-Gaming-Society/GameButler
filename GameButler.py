@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple, Callable
+from typing import List, Tuple
 
 import discord
 from discord import Message
@@ -31,13 +31,8 @@ class GameButler(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        processes: List[Callable[[Message], None]] = [
-            self.troll,
-            self.quotes
-        ]
-
-        for process in processes:
-            await process(message)
+        await self.troll(message)
+        await self.quotes(message)
 
     async def troll(self, message: Message) -> None:
         # this is the responsibility of Tom
