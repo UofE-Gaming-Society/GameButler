@@ -29,8 +29,8 @@ async def execute_role_command(ctx: SlashContext, role: Role, f: Callable[[Slash
             if success_message is not None and len(success_message) > 0:
                 await ctx.send(success_message)
     except Exception as e:
-        await ctx.send("An error occurred")
-        await helper.log(f"An error occurred when {ctx.author.mention} executing a command on {role.mention}: {e}")
+        await helper.error(
+            f"An error occurred when {ctx.author.mention} executing a command on {role.mention}: {e}", ctx.channel)
 
 
 async def list_members_with_role(c: SlashContext, r: Role) -> None:
@@ -108,8 +108,8 @@ class GameRoleManager(commands.Cog):
                 await ctx.send(f"{new_role.mention} role created")
                 await helper.log(f"{ctx.author.mention} created {new_role.mention}")
         except:
-            await ctx.send("An error occurred")
-            await helper.log(f"An error occurred when {ctx.author.mention} attempted to create a role called {role}")
+            await helper.error(
+                f"An error occurred when {ctx.author.mention} attempted to create a role called {role}", ctx.channel)
 
     # Delete role command
     @cog_ext.cog_slash(

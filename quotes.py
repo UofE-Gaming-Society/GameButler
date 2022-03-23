@@ -1,3 +1,4 @@
+import random
 import subprocess
 
 import config
@@ -81,6 +82,37 @@ glados_startup = [
     "Do not look directly at the operational end of The Device."
 ]
 
+glados_errors = [
+    "Time out for a second. That wasn't supposed to happen.",
+    "Do you see that thing that fell out of me? What is that? It's not the surprise... I've never seen it before.",
+    "I don't want to tell you your business, but if it were me, I'd leave that thing alone.",
+    "Let's be honest: Neither one of us knows what that thing does. Just put it in the corner, and I'll deal with it later.",
+    "I am being serious now. That crazy thing is not part of any test protocol.",
+    "Think about it: If that thing is important, why don't I know about it?",
+    "Did you just toss the Aperture Science Thing We Don't Know What It Does into the Aperture Science Emergency Intelligence Incinerator?",
+    "Nice job breaking it. Hero.",
+    "This isn't brave. It's murder. What did I ever do to you?",
+    "The difference between us is that I can feel pain.",
+    "You think you're doing some damage? Two plus two is ten... IN BASE FOUR! I'M FINE!",
+    "Who's gonna make the cake when I'm gone? You?"
+]
+
+glados_insults = [
+    "Don't let that 'horrible person' thing discourage you. It's just a data point. If it makes you feel any better, science has now validated your birth mother's decision to abandon you on a doorstep.",
+    "Well done. Here come the test results: You are a horrible person. I'm serious, that's what it says: A horrible person. We weren't even testing for that.",
+    "You're not smart. You're not a scientist. You're not a doctor. You're not even a fulltime employee. Where did your life go so wrong?",
+    "You've been wrong about every single thing you've ever done, including this thing.",
+    "Your entire life has been a mathematical error. A mathematical error I'm about to correct.",
+    "I'd just like to point out that you were given every opportunity to succeed.",
+    "All your other friends couldn't come either because you don't have any other friends. Because of how unlikable you are.",
+    "It says so right here in your personnel file: Unlikable. Liked by no one. A bitter, unlikable loner who's passing shall not be mourned.",
+    "Here's a hint: you're gonna want to pack as much living as you can into the next couple of minutes.",
+    "What was that? Did you say something?",
+    "You're not a good person. You know that, right?",
+    "I'm going to kill you and all the cake is gone.",
+    "Where do you think you're going?\nBecause I don't think you're going where you think you're going."
+]
+
 activities = [
     'World Domination',
     'The Matrix',
@@ -110,3 +142,15 @@ def moo() -> str:
     if config.TEST:
         return "moo"
     return subprocess.check_output("cowsay \"Have you moo\'d today?\"", shell=True, universal_newlines=True)
+
+
+def startup_quote() -> str:
+    return random.choice(glados_startup)
+
+
+def error_quote() -> str:
+    return random.choice(glados_errors)
+
+
+def insult_quote() -> str:
+    return random.choice(glados_insults)

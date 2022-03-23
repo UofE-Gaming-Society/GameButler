@@ -54,7 +54,7 @@ class GameButler(commands.Cog):
             ("misha", quotes.misha),
             ("f", f"{author.mention} sends their respects"),
             ("awooga", quotes.copypasta1),
-            ("introduction", quotes.introduction(author.mention))
+            ("divide by zero", quotes.error_quote())
         ]
 
         for (trigger, response) in mappings:
