@@ -30,7 +30,10 @@ async def executeRoleCommand(ctx: SlashContext, role: Role, f: Callable[[SlashCo
 
 
 def messageHasGif(message: Message):
-    return "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content
+    if "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content:
+        return True
+    if message.attachments:
+        pass
     # unfinished below here
     gifEmbeds = ["gifv"]
     gifFileTypes = ["gif"]

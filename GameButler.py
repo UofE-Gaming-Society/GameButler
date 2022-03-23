@@ -1,30 +1,26 @@
 import random
-import subprocess
+from typing import List, Tuple
 
 from commands import *
 
 
 class GameButler(commands.Cog):
-    gifspam = 0
+    antiGifSpamCount = 0
     censor = config.CENSOR
     antispam = config.ANTISPAM
-    antiads = False
+    antiAdverts = False
     sendErrorMessage = True
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self._last_member = None
 
     # Sets bot activity and posts bot name and id.
     @commands.Cog.listener()
     async def on_ready(self):
-        await helper.log('Logged in as')
-        await helper.log(self.bot.user.name)
-        await helper.log(self.bot.user.id)
+        await helper.log(f"Initialising {self.bot.user.name} #{self.bot.user.id}")
+        await helper.log(random.choice(quotes.glados_startup))
         await helper.log('------')
-        activities = ['World Domination', 'The Matrix', 'Adventure Time', '💯', 'Dying Inside', 'Poggers',
-                      'Ping @TTChowder']
-        await self.bot.change_presence(activity=discord.Game(name=random.choice(activities)))
+        await self.bot.change_presence(activity=discord.Game(name=random.choice(quotes.activities)))
 
     # Welcomes new member in channel decided in config and assigns welcome role also in config
     @commands.Cog.listener()
@@ -43,17 +39,29 @@ class GameButler(commands.Cog):
     # Chat Watch
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        channel: discord.TextChannel = message.channel
         author: discord.Member = message.author
         content: str = message.content
-        guild: discord.Guild = message.guild
+
+        if type(message.channel) != discord.TextChannel:
+            return  # doesn't reply to DMs or group chats
+        else:
+            channel: discord.TextChannel = message.channel
+            guild: discord.Guild = channel.guild
 
         if author == self.bot.user:
             return
 
         if (author.id == 381756083028361220) and (channel.id == 369207326101602304):
-            await channel.send(f"Moderation Rating: {random.randint(0, 9)}/10")
+            await channel.send(f"Moderation Rating: {random.randint(1, 9)}/10")
 
+        await self.iHaveReadTheRules(content, channel, author, guild)
+        await self.discordInviteFiltering(message, author, channel)
+        await self.gifCensorship(message, author, channel)
+        await self.gifAntiSpam(message, author, channel)
+        await self.quotes(message, author, channel)
+
+    async def iHaveReadTheRules(self, content: str, channel: discord.TextChannel,
+                                author: discord.Member, guild: discord.Guild) -> None:
         if channel.id == config.RULES:
             if "i have read the rules" in content.lower():
                 try:
@@ -76,37 +84,14 @@ class GameButler(commands.Cog):
                 except:
                     await helper.log("Unable to assign role")
 
-        if self.antiads and helper.messageHasDiscordInvite(message):
+    async def discordInviteFiltering(self, message: discord.Message,
+                                     author: discord.Member, channel: discord.TextChannel) -> None:
+        if self.antiAdverts and helper.messageHasDiscordInvite(message):
             await message.delete()
+            await helper.log(f"Deleted a advert from {author.mention} in {channel.mention}")
 
-        if content == '99':
-            response = random.choice(quotes.brooklyn_99_quotes)
-            await channel.send(response)
-
-        if content.lower() == 'glados':
-            response = "```" + random.choice(quotes.glados_quotes) + "```"
-            await channel.send(response)
-
-        if content.lower() == 'lemons':
-            response = "```" + random.choice(quotes.lemon_quotes) + "```"
-            await channel.send(response)
-
-        if 'if life gives you lemons' in content.lower():
-            response = quotes.lemonade
-            await channel.send(response)
-
-        # Read Fortune - Requires fortune and cowsay
-        if content.lower() == "fortune":
-            fortune = subprocess.check_output('fortune | cowsay', shell=True, universal_newlines=True)
-            await channel.send("```{}```".format(fortune))
-
-        if content.lower() == "moo":
-            moo = subprocess.check_output('cowsay "Have you moo\'d today?"', shell=True, universal_newlines=True)
-            await channel.send("```{}```".format(moo))
-
-        if content.lower() == "meeba" or content.lower() == "misha":
-            await channel.send("<:misha:694298077565026396>")
-
+    async def gifCensorship(self, message: discord.Message,
+                            author: discord.Member, channel: discord.TextChannel) -> None:
         # Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
         # Toggleable in config
         if helper.messageHasGif(message) and self.censor:
@@ -124,26 +109,22 @@ class GameButler(commands.Cog):
                         "No Gifs in %s %s " % (channel.mention, author.mention))
                     await helper.log("Gif detected in %s posted by %s" % (channel.name, author.display_name))
 
-        # Pays Respects
-        if content.lower() == 'f':
-            await channel.send(author.mention + ' sends their respects')
-
-        if content.lower() == 'awooga':
-            await channel.send("{}".format(quotes.copypasta1))
-
+    async def gifAntiSpam(self, message: discord.Message, author: discord.Member, channel: discord.TextChannel) -> None:
         # Gif antispam - Toggleable in config
+
+        content: str = message.content
         if channel.id == config.GIF and self.antispam:
-            if self.gifspam == 0:
+            if self.antiGifSpamCount == 0:
                 if helper.messageHasGif(message):
-                    self.gifspam = 1
+                    self.antiGifSpamCount = 1
                 elif message.attachments != []:
                     for attachment in message.attachments:
                         if ".gif" in attachment.filename:
-                            self.gifspam = 1
+                            self.antiGifSpamCount = 1
             else:
                 if helper.messageHasGif(message):
-                    if self.gifspam >= config.LIMIT:
-                        self.gifspam = 1
+                    if self.antiGifSpamCount >= config.LIMIT:
+                        self.antiGifSpamCount = 1
                         self.sendErrorMessage = True
                     elif self.sendErrorMessage:
                         await message.delete()
@@ -160,8 +141,8 @@ class GameButler(commands.Cog):
                 elif message.attachments != []:
                     for attachment in message.attachments:
                         if ".gif" in attachment.filename:
-                            if self.gifspam >= config.LIMIT:
-                                self.gifspam = 1
+                            if self.antiGifSpamCount >= config.LIMIT:
+                                self.antiGifSpamCount = 1
                                 self.sendErrorMessage = True
                             elif self.sendErrorMessage:
                                 await message.delete()
@@ -175,6 +156,25 @@ class GameButler(commands.Cog):
                                 await helper.log(
                                     "Gif Spam detected in %s posted by %s" % (channel.name, author))
                 elif len(content) >= 4:
-                    self.gifspam += 1
+                    self.antiGifSpamCount += 1
 
-        # await self.bot.process_commands(message)
+    async def quotes(self, message: discord.Message, author: discord.Member, channel: discord.TextChannel) -> None:
+        content: str = message.content
+
+        mappings: List[Tuple[str, str]] = [
+            ("99", random.choice(quotes.brooklyn_99_quotes)),
+            ("glados", f"```{random.choice(quotes.glados_quotes)}```"),
+            ("lemons", f"```{random.choice(quotes.lemon_quotes)}```"),
+            ("if life gives you lemons", quotes.lemonade),
+            ("fortune", f"```{quotes.fortune()}```"),
+            ("moo", f"```{quotes.moo}```"),
+            ("meeba", quotes.misha),
+            ("misha", quotes.misha),
+            ("f", f"{author.mention} sends their respects"),
+            ("awooga", quotes.copypasta1)
+        ]
+
+        for (trigger, response) in mappings:
+            if content.lower() == trigger:
+                await message.reply(response)
+                break

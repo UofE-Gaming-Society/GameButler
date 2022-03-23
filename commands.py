@@ -16,7 +16,7 @@ def setupBotCommands(bot: commands.Bot):
     # vgmg rules command
     @slash.slash(name="vgmg", description="Display VGMG rules", guild_ids=config.GUILD_IDS)
     async def vgmg(ctx):
-        await ctx.send(quotes.vgmgrules)
+        await ctx.send(quotes.vgmgRules)
 
     # list role command
     @slash.slash(name="listroles", description="List all game rolls", guild_ids=config.GUILD_IDS)
@@ -169,9 +169,9 @@ def setupBotCommands(bot: commands.Bot):
     )
     @commands.has_permissions(manage_messages=True)
     async def anti_ad(ctx: SlashContext):
-        butler.antiads = not butler.antiads
-        await helper.log(f"Anti Server Invites Toggled to: {butler.antiads}")
-        await ctx.send(f"Anti Server Invites Toggled to: {butler.antiads}")
+        butler.antiAdverts = not butler.antiAdverts
+        await helper.log(f"Anti Server Invites Toggled to: {butler.antiAdverts}")
+        await ctx.send(f"Anti Server Invites Toggled to: {butler.antiAdverts}")
 
     @slash.slash(
         name="antispam",
