@@ -31,4 +31,4 @@ class MiscCommands(commands.Cog):
         ]
     )
     async def insult(self, ctx: SlashContext, target: discord.User):
-        await ctx.send(f"{target.mention} {quotes.insult_quote()}")
+        await ctx.reply(f"{target.mention} {quotes.insult_quote()}")
