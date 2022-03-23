@@ -1,3 +1,5 @@
+from typing import Callable, Awaitable
+
 import discord
 from discord import Role
 from discord.ext import commands
@@ -12,6 +14,33 @@ def role_slash_command_option(name="role", description="Name of game role", requ
     return manage_commands.create_option(name, description, option_type, required)
 
 
+def is_game_role(role: Role) -> bool:
+    return str(role.colour) == str(config.COLOUR)
+
+
+async def execute_role_command(ctx: SlashContext, role: Role, f: Callable[[SlashContext, Role], Awaitable[None]],
+                               success_message: str, invalid_role_message: str):
+    try:
+        if not is_game_role(role):
+            if invalid_role_message is not None and len(invalid_role_message) > 0:
+                await ctx.send(invalid_role_message)
+        else:
+            await f(ctx, role)
+            if success_message is not None and len(success_message) > 0:
+                await ctx.send(success_message)
+    except Exception as e:
+        await ctx.send("An error occurred")
+        await helper.log(f"An error occurred when {ctx.author.mention} executing a command on {role.mention}: {e}")
+
+
+async def list_members_with_role(c: SlashContext, r: Role) -> None:
+    members = [member.display_name for member in r.members]
+    if len(members) == 0:
+        await c.send(f"Nobody has the role {r.mention}")
+    else:
+        await c.send(f"Members with the {r.name} role: " + ', '.join(members))
+
+
 class GameRoleManager(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
@@ -20,7 +49,7 @@ class GameRoleManager(commands.Cog):
     # list role command
     @cog_ext.cog_slash(name="listroles", description="List all game rolls", guild_ids=config.GUILD_IDS)
     async def listroles(self, ctx: SlashContext):
-        roles = ["{0.name}".format(role) for role in ctx.guild.roles if helper.is_game_role(role)]
+        roles = ["{0.name}".format(role) for role in ctx.guild.roles if is_game_role(role)]
         await ctx.send(', '.join(roles))
 
     # Join role command
@@ -31,7 +60,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def join(self, ctx: SlashContext, role: Role):
-        await helper.execute_role_command(
+        await execute_role_command(
             ctx,
             role,
             lambda c, r: c.author.add_roles(r),
@@ -47,7 +76,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def leave(self, ctx: SlashContext, role: Role):
-        await helper.execute_role_command(
+        await execute_role_command(
             ctx,
             role,
             lambda c, r: c.author.remove_roles(r),
@@ -80,7 +109,7 @@ class GameRoleManager(commands.Cog):
                 await helper.log(f"{ctx.author.mention} created {new_role.mention}")
         except:
             await ctx.send("An error occurred")
-            await helper.log(f"An error occured when {ctx.author.mention} attempted to create a role called {role}")
+            await helper.log(f"An error occurred when {ctx.author.mention} attempted to create a role called {role}")
 
     # Delete role command
     @cog_ext.cog_slash(
@@ -93,7 +122,7 @@ class GameRoleManager(commands.Cog):
     async def delete(self, ctx: SlashContext, role: Role):
         if ctx.author.guild_permissions.manage_roles:
             role_name = role.mention
-            await helper.execute_role_command(
+            await execute_role_command(
                 ctx,
                 role,
                 lambda c, r: r.delete(reason=f"Deleted by {c.author}"),
@@ -112,14 +141,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def list(self, ctx: SlashContext, role: Role):
-        async def list_members_with_role(c: SlashContext, r: Role):
-            members = [member.display_name for member in role.members]
-            if len(members) == 0:
-                await c.send(f"Nobody has the role {r.mention}")
-            else:
-                await c.send(f"Members with the {role.name} role: " + ', '.join(members))
-
-        await helper.execute_role_command(
+        await execute_role_command(
             ctx,
             role,
             lambda c, r: list_members_with_role(c, r),
