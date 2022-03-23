@@ -1,17 +1,16 @@
-
-#bot token
+# bot token
 TOKEN = ""
 
-#guild ID for registering slash commands
-GUILD_ID = 0
+# server IDs for registering slash commands
+GUILD_IDS = [0]
 
-#Role it can assign on member joining - int
+# Role it can assign on member joining - int
 NEWMEMBERROLE = 0
 
-#Role to assign upon accepting rules
+# Role to assign upon accepting rules
 MEMBERROLE = 0
 
-#Welcome message channel - int
+# Welcome message channel - int
 CHANNEL = 0
 
 #Bot command channel id - int

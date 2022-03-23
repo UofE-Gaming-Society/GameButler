@@ -1,19 +1,21 @@
-import discord
-import discord_slash
+from typing import Callable
+
 from discord import Role, Message
-from discord_slash import SlashContext, SlashCommand, manage_commands
+from discord_slash import SlashContext
 
 from config import *
 
-from typing import Callable
 
 def isGameRole(role: Role) -> bool:
     return str(role.colour) == str(COLOUR)
 
+
 async def log(message: str) -> None:
     print(message)
 
-async def executeRoleCommand(ctx: SlashContext, role: Role, f: Callable[[SlashContext, Role], None], successMessage: str, invalidRoleMessage: str):
+
+async def executeRoleCommand(ctx: SlashContext, role: Role, f: Callable[[SlashContext, Role], None],
+                             successMessage: str, invalidRoleMessage: str):
     try:
         if not isGameRole(role):
             if invalidRoleMessage != None and len(invalidRoleMessage) > 0:
@@ -26,6 +28,7 @@ async def executeRoleCommand(ctx: SlashContext, role: Role, f: Callable[[SlashCo
         await ctx.send("An error occured")
         await log(f"An error occured when {ctx.author.mention} attempted to do something with {role.mention}: {e}")
 
+
 def messageHasGif(message: Message):
     return "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content
     # unfinished below here
@@ -33,7 +36,12 @@ def messageHasGif(message: Message):
     gifFileTypes = ["gif"]
     gifSites = ["giphy.com/media", "tenor.com/view"]
     return (
-        any([ embed.type in ["gifv"] or any([ site in embed.url for site in gifSites ]) for embed in message.embeds ]) or 
-        any([ attachment.content_type in gifFileTypes for attachment in message.attachments ]) or
-        any([ any([ site in embed.url for site in gifSites ]) for embed in message.embeds ])
+            any([embed.type in ["gifv"] or any([site in embed.url for site in gifSites]) for embed in
+                 message.embeds]) or
+            any([attachment.content_type in gifFileTypes for attachment in message.attachments]) or
+            any([any([site in embed.url for site in gifSites]) for embed in message.embeds])
     )
+
+
+def messageHasDiscordInvite(message: Message):
+    return "discord.gg" in message.content.lower() or "discord.com/invite" in message.content.lower()
