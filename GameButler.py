@@ -40,6 +40,10 @@ class GameButler(commands.Cog):
         if (author.id == 381756083028361220) and (channel.id == 369207326101602304):
             await channel.send(f"Moderation Rating: {random.randint(1, 9)}/10")
 
+        if author.id == 352458055763623947:  # moT
+            if random.random() < 0.05:
+                await message.delete(delay=300)
+
     async def quotes(self, message: Message) -> None:
         content, author, channel, guild = helper.read_message_properties(message)
 
@@ -54,7 +58,8 @@ class GameButler(commands.Cog):
             ("misha", quotes.misha),
             ("f", f"{author.mention} sends their respects"),
             ("awooga", quotes.copypasta1),
-            ("divide by zero", quotes.error_quote())
+            ("divide by zero", quotes.error_quote()),
+            (f"<@!{self.bot.user.id}>", quotes.insult_quote())
         ]
 
         for (trigger, response) in mappings:
