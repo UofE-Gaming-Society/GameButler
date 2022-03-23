@@ -167,7 +167,7 @@ class GameButler(commands.Cog):
             ("lemons", f"```{random.choice(quotes.lemon_quotes)}```"),
             ("if life gives you lemons", quotes.lemonade),
             ("fortune", f"```{quotes.fortune()}```"),
-            ("moo", f"```{quotes.moo}```"),
+            ("moo", f"```{quotes.moo()}```"),
             ("meeba", quotes.misha),
             ("misha", quotes.misha),
             ("f", f"{author.mention} sends their respects"),

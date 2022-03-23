@@ -13,35 +13,30 @@ MEMBERROLE = 0
 # Welcome message channel - int
 CHANNEL = 0
 
-#Bot command channel id - int
-
+# Bot command channel id - int
 BOTCHANNEL = 0
 
-#Role selection channel id - int
-
+# Role selection channel id - int
 ROLECHANNEL = 0
 
-#Channel where user can accept rules - int
+# Channel where user can accept rules - int
 RULES = 0
 
-#Game Role Colour Hexcode Lowercase - str
+# Game Role Colour Hexcode Lowercase - str
 COLOUR = ""
-
 HEXCOLOUR = 0x000000
 
-#Toggle Tenor Gif censorship
-
+# Toggle Tenor Gif censorship
 CENSOR = False
 
-#Anti-Gif Channel - I
+# Anti-Gif Channel - I
 GIF = 0
 
-#Gif Spam Toggle - Bool
+# Gif Spam Toggle - Bool
 ANTISPAM = False
 
-#GIF spam limit - int
+# GIF spam limit - int
 LIMIT = 6
 
-
-
-
+# toggleable test mode
+TEST = False

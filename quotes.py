@@ -1,5 +1,7 @@
 import subprocess
 
+import config
+
 copypasta1 = """*jaw drops to floor, eyes pop out of sockets accompanied by trumpets, heart beats out of chest, 
 awooga awooga sound effect, pulls chain on train whistle that has appeared next to head as steam blows out, 
 slams fists on table, rattling any plates, bowls or silverware, whistles loudly, fireworks shoot from top of head, 
@@ -68,13 +70,6 @@ brooklyn_99_quotes = [
     ),
 ]
 
-
-def fortune():
-    return subprocess.check_output('fortune | cowsay', shell=True, universal_newlines=True)
-
-
-moo = subprocess.check_output("cowsay \"Have you moo\'d today?\"", shell=True, universal_newlines=True)
-
 misha = "<:misha:694298077565026396>"
 
 glados_startup = [
@@ -95,3 +90,15 @@ activities = [
     'Poggers',
     'Ping @TTChowder'
 ]
+
+
+def fortune():
+    if config.TEST:
+        return "fortune"
+    return subprocess.check_output('fortune | cowsay', shell=True, universal_newlines=True)
+
+
+def moo():
+    if config.TEST:
+        return "moo"
+    return subprocess.check_output("cowsay \"Have you moo\'d today?\"", shell=True, universal_newlines=True)
