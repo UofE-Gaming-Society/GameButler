@@ -41,8 +41,5 @@ LIMIT = 6
 # Discord invite link filtering - bool
 ANTI_ADVERT = False
 
-# Show error messages? - bool
-PRINT_ERRORS = True
-
 # toggleable test mode
 TEST = True

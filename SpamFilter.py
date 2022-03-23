@@ -14,7 +14,7 @@ class SpamFilter(commands.Cog):
     censor = config.CENSOR
     antispam = config.ANTISPAM
     anti_adverts = config.ANTI_ADVERT
-    sendErrorMessage = config.PRINT_ERRORS
+    sendErrorMessage = True
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
