@@ -9,17 +9,25 @@ import config
 import helper
 
 
+def string_slash_command_option(name: str, description: str, required=True) -> dict:
+    option_type = 3  # string option type
+    return manage_commands.create_option(name, description, option_type, required)
+
+
 def role_slash_command_option(name="role", description="Name of game role", required=True) -> dict:
     option_type = 8  # role option type
     return manage_commands.create_option(name, description, option_type, required)
 
 
 def is_game_role(role: Role) -> bool:
-    return str(role.colour) == str(config.COLOUR)
+    return role.colour.value == config.HEXCOLOUR
 
 
-async def execute_role_command(ctx: SlashContext, role: Role, f: Callable[[SlashContext, Role], Awaitable[None]],
-                               success_message: str, invalid_role_message: str):
+async def execute_game_role_command(ctx: SlashContext, role: Role, f: Callable[[SlashContext, Role], Awaitable[None]],
+                                    success_message: str, invalid_role_message: str) -> bool:
+    """Executes a function on a game role. Game roles are defined as rolls with colours matching the config setting.
+    The provided function must take SlashContext and Role as arguments in that order.
+    Returns True if the command was executed successfully, False otherwise."""
     try:
         if not is_game_role(role):
             if invalid_role_message is not None and len(invalid_role_message) > 0:
@@ -28,9 +36,11 @@ async def execute_role_command(ctx: SlashContext, role: Role, f: Callable[[Slash
             await f(ctx, role)
             if success_message is not None and len(success_message) > 0:
                 await ctx.send(success_message)
+                return True
     except Exception as e:
         await helper.error(
             f"An error occurred when {ctx.author.mention} executing a command on {role.mention}: {e}", ctx.channel)
+    return False
 
 
 async def list_members_with_role(c: SlashContext, r: Role) -> None:
@@ -60,7 +70,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def join(self, ctx: SlashContext, role: Role):
-        await execute_role_command(
+        await execute_game_role_command(
             ctx,
             role,
             lambda c, r: c.author.add_roles(r),
@@ -76,7 +86,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def leave(self, ctx: SlashContext, role: Role):
-        await execute_role_command(
+        await execute_game_role_command(
             ctx,
             role,
             lambda c, r: c.author.remove_roles(r),
@@ -87,26 +97,27 @@ class GameRoleManager(commands.Cog):
     # Create role command
     @cog_ext.cog_slash(
         name="create",
-        description="Create game role - Must have Manage role Permission",
-        options=[role_slash_command_option()],
+        description="Create game role - Must have \"Manage Role\" Permission",
+        options=[string_slash_command_option("role", "Name of new game role")],
         guild_ids=config.GUILD_IDS
     )
     @commands.has_permissions(manage_roles=True)
     async def create(self, ctx: SlashContext, role: str):
-        role = role.lower()
         try:
-            if not ctx.author.guild_permissions.manage_roles:
-                await ctx.send("You have insufficient permissions to modify roles")
-            else:
-                # check if role with same name already exists
-                if any([role == r.name for r in ctx.guild.roles]):
-                    await ctx.send(f"{role} already exists")
+            role_name = role.lower()
 
-                new_role: Role = await ctx.guild.create_role(name=role,
-                                                             colour=discord.Colour(config.HEXCOLOUR),
-                                                             mentionable=True)
-                await ctx.send(f"{new_role.mention} role created")
-                await helper.log(f"{ctx.author.mention} created {new_role.mention}")
+            # check if role with same name already exists
+            if any([role_name == r.name for r in ctx.guild.roles]):
+                await ctx.send(f"{role_name} already exists")
+                return
+
+            new_role: Role = await ctx.guild.create_role(
+                name=role_name,
+                colour=discord.Colour(config.HEXCOLOUR),
+                mentionable=True
+            )
+            await ctx.send(f"{new_role.mention} role created")
+            await helper.log(f"{ctx.author.name} created {new_role.name}")
         except:
             await helper.error(
                 f"An error occurred when {ctx.author.mention} attempted to create a role called {role}", ctx.channel)
@@ -121,15 +132,15 @@ class GameRoleManager(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def delete(self, ctx: SlashContext, role: Role):
         if ctx.author.guild_permissions.manage_roles:
-            role_name = role.mention
-            await execute_role_command(
-                ctx,
-                role,
-                lambda c, r: r.delete(reason=f"Deleted by {c.author}"),
-                "Role deleted",
-                "This is not a valid game role"
-            )
-            await helper.log(f"{ctx.author.mention} deleted {role_name}")
+            role_name = role.name
+            if await execute_game_role_command(
+                    ctx,
+                    role,
+                    lambda c, r: r.delete(reason=f"Deleted by {c.author}"),
+                    "Role deleted",
+                    "This is not a valid game role"
+            ):
+                await helper.log(f"{ctx.author.name} deleted {role_name}")
         else:
             await ctx.send("You have insufficient permissions")
 
@@ -141,7 +152,7 @@ class GameRoleManager(commands.Cog):
         guild_ids=config.GUILD_IDS
     )
     async def list(self, ctx: SlashContext, role: Role):
-        await execute_role_command(
+        await execute_game_role_command(
             ctx,
             role,
             lambda c, r: list_members_with_role(c, r),
