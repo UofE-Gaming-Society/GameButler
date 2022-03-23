@@ -9,7 +9,7 @@ from SpamFilter import SpamFilter
 from config import TOKEN
 
 bot = commands.Bot(command_prefix='~', intents=Intents.all(), case_insensitive=True)
-slash = SlashCommand(bot)
+slash = SlashCommand(bot, sync_commands=True)
 
 bot.add_cog(GameButler(bot))
 bot.add_cog(GameRoleManager(bot))

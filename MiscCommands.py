@@ -19,12 +19,12 @@ class MiscCommands(commands.Cog):
     # GLADoS insult
     @cog_ext.cog_slash(
         name="insult",
-        description="",
+        description="Ask GLADoS to insult someone",
         guild_ids=config.GUILD_IDS,
         options=[
             manage_commands.create_option(
                 name="target",
-                description="",
+                description="Target of GLADoS' impending insult",
                 option_type=6,  # user
                 required=True
             )
