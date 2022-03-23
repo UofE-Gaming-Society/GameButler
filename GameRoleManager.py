@@ -7,6 +7,11 @@ import config
 import helper
 
 
+def role_slash_command_option(name="role", description="Name of game role", required=True) -> dict:
+    option_type = 8  # role option type
+    return manage_commands.create_option(name, description, option_type, required)
+
+
 class GameRoleManager(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
@@ -22,14 +27,7 @@ class GameRoleManager(commands.Cog):
     @cog_ext.cog_slash(
         name="join",
         description="Join game role",
-        options=[
-            manage_commands.create_option(
-                name="role",
-                description="Name of game role",
-                option_type=8,  # role
-                required=True
-            )
-        ],
+        options=[role_slash_command_option()],
         guild_ids=config.GUILD_IDS
     )
     async def join(self, ctx: SlashContext, role: Role):
@@ -45,14 +43,7 @@ class GameRoleManager(commands.Cog):
     @cog_ext.cog_slash(
         name="leave",
         description="Leave game role",
-        options=[
-            manage_commands.create_option(
-                name="role",
-                description="Name of game role",
-                option_type=8,  # role
-                required=True
-            )
-        ],
+        options=[role_slash_command_option()],
         guild_ids=config.GUILD_IDS
     )
     async def leave(self, ctx: SlashContext, role: Role):
@@ -68,14 +59,7 @@ class GameRoleManager(commands.Cog):
     @cog_ext.cog_slash(
         name="create",
         description="Create game role - Must have Manage role Permission",
-        options=[
-            manage_commands.create_option(
-                name="role",
-                description="Name of game role",
-                option_type=3,  # string
-                required=True
-            )
-        ],
+        options=[role_slash_command_option()],
         guild_ids=config.GUILD_IDS
     )
     @commands.has_permissions(manage_roles=True)
@@ -102,14 +86,7 @@ class GameRoleManager(commands.Cog):
     @cog_ext.cog_slash(
         name="delete",
         description="Delete game role - Must have Manage role Permission",
-        options=[
-            manage_commands.create_option(
-                name="role",
-                description="Name of game role",
-                option_type=8,  # role
-                required=True
-            )
-        ],
+        options=[role_slash_command_option()],
         guild_ids=config.GUILD_IDS
     )
     @commands.has_permissions(manage_roles=True)
@@ -131,14 +108,7 @@ class GameRoleManager(commands.Cog):
     @cog_ext.cog_slash(
         name="list",
         description="List all members in game role",
-        options=[
-            manage_commands.create_option(
-                name="role",
-                description="Name of game role",
-                option_type=8,  # role
-                required=True
-            )
-        ],
+        options=[role_slash_command_option()],
         guild_ids=config.GUILD_IDS
     )
     async def list(self, ctx: SlashContext, role: Role):
