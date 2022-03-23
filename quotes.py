@@ -92,13 +92,21 @@ activities = [
 ]
 
 
-def fortune():
+def introduction(newMemberMention: str) -> str:
+    # ugly indentation, feel free to fix
+    return f"""
+Welcome {newMemberMention} to the server!!!
+Bot help command is ~help, feel free to use it in <#{config.BOTCHANNEL}> to add yourself to game roles so you can get notified 
+React to the relevant messages in <#{config.ROLECHANNEL}> to give yourself access to various channels on the server"""
+
+
+def fortune() -> str:
     if config.TEST:
         return "fortune"
     return subprocess.check_output('fortune | cowsay', shell=True, universal_newlines=True)
 
 
-def moo():
+def moo() -> str:
     if config.TEST:
         return "moo"
     return subprocess.check_output("cowsay \"Have you moo\'d today?\"", shell=True, universal_newlines=True)

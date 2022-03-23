@@ -1,13 +1,14 @@
-from typing import Callable
+from typing import Callable, Tuple
 
+import discord
 from discord import Role, Message
 from discord_slash import SlashContext
 
-from config import *
+import config
 
 
 def isGameRole(role: Role) -> bool:
-    return str(role.colour) == str(COLOUR)
+    return str(role.colour) == str(config.COLOUR)
 
 
 async def log(message: str) -> None:
@@ -48,3 +49,11 @@ def messageHasGif(message: Message):
 
 def messageHasDiscordInvite(message: Message):
     return "discord.gg" in message.content.lower() or "discord.com/invite" in message.content.lower()
+
+
+def readMessageProperties(message: Message) -> Tuple[str, discord.Member, discord.TextChannel, discord.Guild]:
+    content: str = message.content
+    author: discord.Member = message.author
+    channel: discord.TextChannel = message.channel
+    guild: discord.Guild = message.guild
+    return content, author, channel, guild
