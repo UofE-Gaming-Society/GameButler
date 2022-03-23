@@ -4,6 +4,7 @@ from discord_slash import SlashCommand
 
 from GameButler import GameButler
 from GameRoleManager import GameRoleManager
+from MiscCommands import MiscCommands
 from SpamFilter import SpamFilter
 from config import TOKEN
 
@@ -13,5 +14,6 @@ slash = SlashCommand(bot)
 bot.add_cog(GameButler(bot))
 bot.add_cog(GameRoleManager(bot))
 bot.add_cog(SpamFilter(bot))
+bot.add_cog(MiscCommands(bot))
 
 bot.run(TOKEN)
