@@ -133,7 +133,8 @@ class SpamFilter(commands.Cog):
                     elif len(content) >= 4:
                         self.anti_gif_spam_count[channel.id] += 1
 
-        print(self.anti_gif_spam_count[channel.id])
+        if config.TEST:
+            await helper.log(f"{self.anti_gif_spam_count[channel.id]}/{config.LIMIT} in {channel.name}")
 
     # Welcomes new member in channel decided in config and assigns welcome role also in config
     @commands.Cog.listener()
