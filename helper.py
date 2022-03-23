@@ -30,27 +30,6 @@ async def execute_role_command(ctx: SlashContext, role: Role, f: Callable[[Slash
         await log(f"An error occurred when {ctx.author.mention} attempted to do something with {role.mention}: {e}")
 
 
-def message_has_gif(message: Message):
-    if "tenor.com/view" in message.content or "giphy.com/media" in message.content or ".gif" in message.content:
-        return True
-    if message.attachments:
-        pass
-    # unfinished below here
-    gif_embeds = ["gifv"]
-    gif_file_types = ["gif"]
-    gif_sites = ["giphy.com/media", "tenor.com/view"]
-    return (
-            any([embed.type in gif_embeds or any([site in embed.url for site in gif_sites]) for embed in
-                 message.embeds]) or
-            any([attachment.content_type in gif_file_types for attachment in message.attachments]) or
-            any([any([site in embed.url for site in gif_sites]) for embed in message.embeds])
-    )
-
-
-def message_has_discord_invite(message: Message):
-    return "discord.gg" in message.content.lower() or "discord.com/invite" in message.content.lower()
-
-
 def read_message_properties(message: Message) -> Tuple[str, discord.Member, discord.TextChannel, discord.Guild]:
     content: str = message.content
     author: discord.Member = message.author

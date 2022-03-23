@@ -1,4 +1,5 @@
-from typing import List, Callable
+import re
+from typing import Dict
 
 from discord import Message, TextChannel, Member, Guild, Role
 from discord.ext import commands
@@ -9,8 +10,29 @@ import helper
 import quotes
 
 
+def is_anti_gif_spam_channel(channel: TextChannel) -> bool:
+    return channel.id in config.ANTI_GIF_CHANNELS
+
+
+def message_has_gif(message: Message):
+    content, author, channel, guild = helper.read_message_properties(message)
+
+    # checks for disallowed gif patterns using regex, defined in config
+    if any([pattern.search(content) is not None for pattern in config.ANTI_GIF_PATTERNS]):
+        return True
+    return False
+
+
+def message_has_discord_invite(message: Message) -> bool:
+    # uses regex to test for whether a message has a discord invite link in it
+    content, author, channel, guild = helper.read_message_properties(message)
+    pattern = re.compile(r"(https?://)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com/invite)/.+[a-z]")
+    return pattern.search(content) is not None
+
+
 class SpamFilter(commands.Cog):
-    anti_gif_spam_count = 0
+    anti_gif_spam_count: Dict[int, int] = {}
+    anti_gif_spam_error_enabled: Dict[int, bool] = {}
     censor = config.CENSOR
     antispam = config.ANTISPAM
     anti_adverts = config.ANTI_ADVERT
@@ -18,6 +40,9 @@ class SpamFilter(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        for channelId in config.ANTI_GIF_CHANNELS:
+            self.anti_gif_spam_count[channelId] = 0
+            self.anti_gif_spam_error_enabled[channelId] = True
 
     @cog_ext.cog_slash(
         name="anti_ad",
@@ -63,19 +88,14 @@ class SpamFilter(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        processes: List[Callable[[Message], None]] = [
-            self.i_have_read_the_rules,
-            self.discord_invite_filtering,
-            self.gif_censorship,
-            self.gif_anti_spam
-        ]
-
-        for process in processes:
-            await process(message)
+        await self.i_have_read_the_rules(message)
+        await self.discord_invite_filtering(message)
+        await self.gif_censorship(message)
+        await self.gif_anti_spam(message)
 
     async def discord_invite_filtering(self, message: Message) -> None:
         content, author, channel, guild = helper.read_message_properties(message)
-        if self.anti_adverts and helper.message_has_discord_invite(message):
+        if self.anti_adverts and message_has_discord_invite(message):
             await message.delete()
             await helper.log(f"Deleted a advert from {author.mention} in {channel.mention}")
 
@@ -83,43 +103,37 @@ class SpamFilter(commands.Cog):
         # Tenor Gif Censorship, allows link embeds but removes all gifs from channel decided in config
         # Toggleable in config
         content, author, channel, guild = helper.read_message_properties(message)
-        if helper.message_has_gif(message) and self.censor:
-            if channel.id == config.GIF:
-                await message.delete()
-                channel: TextChannel = channel
-                await channel.send(
-                    "No Gifs in %s %s " % (channel.mention, author.mention))
-                await helper.log("Gif detected in %s posted by %s" % (channel.name, author.display_name))
-        elif message.attachments != [] and self.censor:
-            for attachment in message.attachments:
-                if ".gif" in attachment.filename:
-                    await message.delete()
-                    await channel.send(
-                        "No Gifs in %s %s " % (channel.mention, author.mention))
-                    await helper.log("Gif detected in %s posted by %s" % (channel.name, author.display_name))
+        if self.censor and is_anti_gif_spam_channel(channel) and message_has_gif(message):
+            await message.delete()
+            await channel.send("No Gifs in %s %s " % (channel.mention, author.mention))
+            await helper.log("Gif detected in %s posted by %s" % (channel.name, author.display_name))
 
     async def gif_anti_spam(self, message: Message) -> None:
         # Gif antispam - Toggleable in config
         content, author, channel, guild = helper.read_message_properties(message)
-        if channel.id == config.GIF and self.antispam:
-            if not self.anti_gif_spam_count:
+        if self.antispam and is_anti_gif_spam_channel(channel):
+            if self.anti_gif_spam_count[channel.id] == 0:
                 # gif allowed
-                self.anti_gif_spam_count: int = helper.message_has_gif(message)
+                self.anti_gif_spam_count[channel.id] = int(message_has_gif(message))
             else:
                 # gif not allowed
-                if helper.message_has_gif(message):
-                    if self.anti_gif_spam_count >= config.LIMIT:
-                        self.anti_gif_spam_count = 1
-                        self.sendErrorMessage = True
-                    else:
-                        await message.delete()
-                        await helper.log(f"Gif Spam detected in {channel.name} posted by {author.display_name}")
-                        if self.sendErrorMessage:
-                            # only shows error message once
-                            await channel.send(f"No Gif spam in {channel.mention} {author.mention}")
-                            self.sendErrorMessage = False
-                elif len(content) >= 4:
-                    self.anti_gif_spam_count += 1
+                if message_has_gif(message):
+                    # is gif, delete
+                    await message.delete()
+                    await helper.log(f"Gif Spam detected in {channel.name} posted by {author.display_name}")
+                    if self.anti_gif_spam_error_enabled[channel.id]:
+                        # only shows error message once
+                        await channel.send(f"No Gif spam in {channel.mention} {author.mention}")
+                        self.anti_gif_spam_error_enabled[channel.id] = False
+                else:
+                    # is not gif, increment count
+                    if self.anti_gif_spam_count[channel.id] >= config.LIMIT:
+                        self.anti_gif_spam_count[channel.id] = 0
+                        self.anti_gif_spam_error_enabled[channel.id] = True
+                    elif len(content) >= 4:
+                        self.anti_gif_spam_count[channel.id] += 1
+
+        print(self.anti_gif_spam_count[channel.id])
 
     # Welcomes new member in channel decided in config and assigns welcome role also in config
     @commands.Cog.listener()

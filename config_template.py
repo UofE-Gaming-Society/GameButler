@@ -1,3 +1,6 @@
+import re
+from typing import List
+
 # bot token
 TOKEN = ""
 
@@ -29,8 +32,15 @@ HEXCOLOUR = 0x000000
 # Toggle Tenor Gif censorship
 CENSOR = False
 
-# Anti-Gif Channel - I
-GIF = 0
+# Anti-Gif Channels - which channels to enable the anti-gif-spam in
+ANTI_GIF_CHANNELS: List[int] = [0]
+
+# Anti-Gif search terms, uses regular expressions
+ANTI_GIF_PATTERNS: List[re.Pattern] = [
+    re.compile(r"tenor\.com/view"),
+    re.compile(r"giphy\.com/media"),
+    re.compile(r".*\.gif")
+]
 
 # Gif Spam Toggle - Bool
 ANTISPAM = False
