@@ -6,8 +6,6 @@ import config
 import helper
 import quotes
 
-intents = discord.Intents.all()
-
 
 def setupBotCommands(bot: commands.Bot):
     slash = SlashCommand(bot, sync_commands=True)

@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 
 import discord
 from discord import Message, Role, Member, Guild
@@ -37,7 +37,7 @@ class GameButler(commands.Cog):
                 guild: Guild = member.guild
                 newMemberRole: Role = guild.get_role(config.NEWMEMBERROLE)
                 await member.add_roles(newMemberRole)
-                await helper.log("Assigned  new member role to " + member.name)
+                await helper.log(f"Assigned new member role to {member.name}")
             except:
                 await helper.log(f"Unable to assign new member role to {member.name}")
         except:
@@ -52,12 +52,17 @@ class GameButler(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        await self.iHaveReadTheRules(message)
-        await self.discordInviteFiltering(message)
-        await self.gifCensorship(message)
-        await self.gifAntiSpam(message)
-        await self.troll(message)
-        await self.quotes(message)
+        processes: List[Callable[[Message], None]] = [
+            self.iHaveReadTheRules,
+            self.discordInviteFiltering,
+            self.gifCensorship,
+            self.gifAntiSpam,
+            self.troll,
+            self.quotes
+        ]
+
+        for process in processes:
+            await process(message)
 
     async def iHaveReadTheRules(self, message: Message) -> None:
         content, author, channel, guild = helper.readMessageProperties(message)
