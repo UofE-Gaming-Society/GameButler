@@ -13,6 +13,9 @@ NEWMEMBERROLE = 0
 # Role to assign upon accepting rules
 MEMBERROLE = 0
 
+# Role to control bot
+BOT_ADMIN_ROLE = 0
+
 # Welcome message channel - int
 CHANNEL = 0
 
