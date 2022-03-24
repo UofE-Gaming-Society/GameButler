@@ -6,9 +6,11 @@ from GameButler import GameButler
 from GameRoleManager import GameRoleManager
 from MiscCommands import MiscCommands
 from SpamFilter import SpamFilter
-from config import TOKEN
+import config
 
 if __name__ == "__main__":
+    if config.TEST: print("Example change")
+    
     bot = commands.Bot(command_prefix='~', intents=Intents.all(), case_insensitive=True)
     slash = SlashCommand(bot, sync_commands=True)
 
@@ -21,7 +23,7 @@ if __name__ == "__main__":
     bot.restart = False
 
     try:
-        bot.run(TOKEN)
+        bot.run(config.TOKEN)
     except Exception as e:
         print("Shutting down...")
 
