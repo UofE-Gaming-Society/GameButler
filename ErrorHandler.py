@@ -25,3 +25,7 @@ class ErrorHandler(commands.Cog):
             return
 
         await ctx.send(message)
+
+
+def setup(bot: commands.Bot):
+    bot.add_cog(ErrorHandler(bot))

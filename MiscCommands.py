@@ -32,3 +32,7 @@ class MiscCommands(commands.Cog):
     )
     async def insult(self, ctx: SlashContext, target: discord.User):
         await ctx.reply(f"{target.mention} {quotes.insult_quote()}")
+
+
+def setup(bot: commands.Bot):
+    bot.add_cog(MiscCommands(bot))
