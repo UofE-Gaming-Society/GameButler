@@ -4,7 +4,9 @@ from typing import List, Tuple
 import discord
 from discord import Message
 from discord.ext import commands
+from discord_slash import cog_ext, SlashContext
 
+import config
 import helper
 import quotes
 
@@ -66,3 +68,24 @@ class GameButler(commands.Cog):
             if content.lower() == trigger:
                 await message.reply(response)
                 break
+
+    @cog_ext.cog_slash(name="close", description="Close this bot", guild_ids=config.GUILD_IDS, options=[])
+    async def close(self, ctx: SlashContext):
+        self.bot.git_update = False
+        self.bot.restart = False
+        await ctx.send("Shutting down...")
+        await self.bot.close()
+
+    @cog_ext.cog_slash(name="restart", description="Restart this bot", guild_ids=config.GUILD_IDS, options=[])
+    async def restart(self, ctx: SlashContext):
+        self.bot.git_update = False
+        self.bot.restart = True
+        await ctx.send("Shutting down...")
+        await self.bot.close()
+
+    @cog_ext.cog_slash(name="update", description="Update this bot", guild_ids=config.GUILD_IDS, options=[])
+    async def update(self, ctx: SlashContext):
+        self.bot.git_update = True
+        self.bot.restart = True
+        await ctx.send("Shutting down...")
+        await self.bot.close()
