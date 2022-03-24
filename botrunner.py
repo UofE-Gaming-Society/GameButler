@@ -9,7 +9,7 @@ from SpamFilter import SpamFilter
 import config
 
 if __name__ == "__main__":
-    if config.TEST: print("Example change")
+    if config.TEST: print("Example change 2")
     
     bot = commands.Bot(command_prefix='~', intents=Intents.all(), case_insensitive=True)
     slash = SlashCommand(bot, sync_commands=True)
