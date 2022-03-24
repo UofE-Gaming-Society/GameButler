@@ -1,4 +1,5 @@
 import random
+import subprocess
 from typing import List, Tuple
 
 import discord
@@ -108,6 +109,14 @@ class GameButler(commands.Cog):
         await helper.log(f"{ctx.author.display_name} triggered command resync")
         await self.bot.slash.sync_all_commands()
         await ctx.send("Re-synced all commands")
+
+    @cog_ext.cog_slash(name="git-pull", description="Do a git pull", guild_ids=config.GUILD_IDS, options=[])
+    @commands.has_role(config.BOT_ADMIN_ROLE)
+    async def git_pull(self, ctx: SlashContext):
+        await helper.log(f"{ctx.author.display_name} began a git pull")
+        output = subprocess.Popen("git pull", shell=True, stdout=subprocess.PIPE).communicate()[0]
+        await helper.log(str(output))
+        await ctx.send("Git pull completed")
 
 
 def setup(bot: commands.Bot):
