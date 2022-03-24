@@ -1,4 +1,5 @@
 import random
+import subprocess
 from typing import List, Tuple
 
 import discord
@@ -92,3 +93,31 @@ class GameButler(commands.Cog):
         self.bot.restart = True
         await ctx.send("Shutting down...")
         await self.bot.close()
+
+    @cog_ext.cog_slash(name="reload-cog", description="Reload a specific Cog", guild_ids=config.GUILD_IDS,
+                       options=[helper.string_slash_command_option("cog", "Name of Cog to reload")])
+    @commands.has_role(config.BOT_ADMIN_ROLE)
+    async def reload_cog(self, ctx: SlashContext, cog: str):
+        await helper.log(f"{ctx.author.display_name} reloaded {cog}")
+        self.bot.reload_extension(cog)
+        await ctx.send("Reloaded " + cog)
+
+    @cog_ext.cog_slash(name="sync-commands", description="Try to force slash command sync", guild_ids=config.GUILD_IDS,
+                       options=[])
+    @commands.has_role(config.BOT_ADMIN_ROLE)
+    async def sync_commands(self, ctx: SlashContext):
+        await helper.log(f"{ctx.author.display_name} triggered command resync")
+        await self.bot.slash.sync_all_commands()
+        await ctx.send("Re-synced all commands")
+
+    @cog_ext.cog_slash(name="git-pull", description="Do a git pull", guild_ids=config.GUILD_IDS, options=[])
+    @commands.has_role(config.BOT_ADMIN_ROLE)
+    async def git_pull(self, ctx: SlashContext):
+        await helper.log(f"{ctx.author.display_name} began a git pull")
+        output = subprocess.Popen("git pull", shell=True, stdout=subprocess.PIPE).communicate()[0]
+        await helper.log(str(output))
+        await ctx.send("Git pull completed")
+
+
+def setup(bot: commands.Bot):
+    bot.add_cog(GameButler(bot))

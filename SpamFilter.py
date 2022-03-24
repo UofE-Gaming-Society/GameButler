@@ -170,3 +170,7 @@ class SpamFilter(commands.Cog):
                     await helper.log(f"Introduced {author.name}")
                 except:
                     await helper.log("Unable to assign role")
+
+
+def setup(bot: commands.Bot):
+    bot.add_cog(SpamFilter(bot))
