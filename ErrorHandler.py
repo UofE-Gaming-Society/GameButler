@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from discord_slash import SlashContext
 from discord_slash.error import SlashCommandError
@@ -19,12 +20,13 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.MissingPermissions):
             message = f"You do not have the required permissions to use this command"
         elif isinstance(error, commands.MissingRole):
-            message = f"You do not have the required role to use this command"
+            role: discord.Role = ctx.guild.get_role(error.missing_role)
+            message = f"You do not have the required {role.mention} role to use this command"
         else:
             await helper.error(str(error), ctx.channel)
             return
 
-        await ctx.send(message)
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions(users=[ctx.author]))
 
 
 def setup(bot: commands.Bot):
