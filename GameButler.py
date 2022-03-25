@@ -112,6 +112,7 @@ class GameButler(commands.Cog):
     @cog_ext.cog_slash(name="sync-commands", description="Try to force slash command sync", guild_ids=config.GUILD_IDS,
                        options=[])
     @commands.has_role(config.BOT_ADMIN_ROLE)
+    @commands.cooldown(1, 60.0, commands.BucketType.default)
     async def sync_commands(self, ctx: SlashContext):
         await helper.log(f"{ctx.author.display_name} triggered command resync")
         await ctx.slash.sync_all_commands()
