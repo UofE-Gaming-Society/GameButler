@@ -70,9 +70,10 @@ class GameButler(commands.Cog):
                 await message.reply(response)
                 break
 
-    @cog_ext.cog_slash(name="close", description="Close this bot", guild_ids=config.GUILD_IDS, options=[])
+    @cog_ext.cog_slash(name="shutdown", description="Shutdown this bot, DO NOT USE", guild_ids=config.GUILD_IDS,
+                       options=[])
     @commands.has_role(config.BOT_ADMIN_ROLE)
-    async def close(self, ctx: SlashContext):
+    async def shutdown(self, ctx: SlashContext):
         self.bot.git_update = False
         self.bot.restart = False
         await ctx.send("Shutting down...")
@@ -83,7 +84,7 @@ class GameButler(commands.Cog):
     async def restart(self, ctx: SlashContext):
         self.bot.git_update = False
         self.bot.restart = True
-        await ctx.send("Shutting down...")
+        await ctx.send("Restarting...")
         await self.bot.close()
 
     @cog_ext.cog_slash(name="update", description="Update this bot", guild_ids=config.GUILD_IDS, options=[])
@@ -91,7 +92,7 @@ class GameButler(commands.Cog):
     async def update(self, ctx: SlashContext):
         self.bot.git_update = True
         self.bot.restart = True
-        await ctx.send("Shutting down...")
+        await ctx.send("Updating...")
         await self.bot.close()
 
     @cog_ext.cog_slash(name="reload-cog", description="Reload a specific Cog", guild_ids=config.GUILD_IDS,
