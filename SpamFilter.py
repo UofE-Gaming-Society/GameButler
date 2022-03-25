@@ -153,23 +153,14 @@ class SpamFilter(commands.Cog):
 
     async def i_have_read_the_rules(self, message: Message) -> None:
         content, author, channel, guild = helper.read_message_properties(message)
-        if channel.id == config.RULES:
-            if "i have read the rules" in content.lower():
-                try:
-                    member_role: Role = guild.get_role(config.MEMBERROLE)
-                    await author.add_roles(member_role)
-                    await helper.log(f"Assigned member role to {author.name}")
-                    try:
-                        new_member_role: Role = guild.get_role(config.NEWMEMBERROLE)
-                        await author.remove_roles(new_member_role)
-                    except:
-                        await helper.log(f"Unable to remove new member role from {author.display_name}")
-
-                    intro_channel = guild.get_channel(config.CHANNEL)
-                    await intro_channel.send(quotes.introduction(author.mention))
-                    await helper.log(f"Introduced {author.name}")
-                except:
-                    await helper.log("Unable to assign role")
+        member_role: Role = guild.get_role(config.MEMBERROLE)
+        new_member_role: Role = guild.get_role(config.NEWMEMBERROLE)
+        intro_channel = guild.get_channel(config.CHANNEL)
+        if channel.id == config.RULES and "i have read the rules" in content.lower() and new_member_role in author.roles:
+            await author.add_roles(member_role)
+            await author.remove_roles(new_member_role)
+            await intro_channel.send(quotes.introduction(author.mention))
+            await helper.log(f"Assigned member role to and introduced {author.name}")
 
 
 def setup(bot: commands.Bot):
