@@ -112,27 +112,27 @@ class SpamFilter(commands.Cog):
         # Gif antispam - Toggleable in config
         content, author, channel, guild = helper.read_message_properties(message)
         if self.antispam and is_anti_gif_spam_channel(channel):
-            if self.anti_gif_spam_count[channel.id] == 0:
-                # gif allowed
-                self.anti_gif_spam_count[channel.id] = int(message_has_gif(message))
-            else:
-                # gif not allowed
-                if message_has_gif(message):
-                    # is gif, delete
+            # only continue if antispam is enabled and this message was sent in an anti gif spam channel
+            if message_has_gif(message):
+                if self.anti_gif_spam_count[channel.id] == 0 and author.id != 261793184106020866:
+                    # gif allowed
+                    self.anti_gif_spam_count[channel.id] = 1
+                else:
+                    # gif not allowed
                     await message.delete()
                     await helper.log(f"Gif Spam detected in {channel.name} posted by {author.display_name}")
                     if self.anti_gif_spam_error_enabled[channel.id]:
                         # only shows error message once
                         await channel.send(f"No Gif spam in {channel.mention} {author.mention}")
                         self.anti_gif_spam_error_enabled[channel.id] = False
-                else:
-                    # is not gif, increment count
-                    if self.anti_gif_spam_count[channel.id] >= config.LIMIT:
-                        self.anti_gif_spam_count[channel.id] = 0
-                        self.anti_gif_spam_error_enabled[channel.id] = True
-                    elif len(content) >= 4:
-                        self.anti_gif_spam_count[channel.id] += 1
-
+            else:
+                if len(content) >= 4:
+                    # message long enough to increment counter towards unlock limit
+                    self.anti_gif_spam_count[channel.id] += 1
+                if self.anti_gif_spam_count[channel.id] > config.LIMIT:
+                    # unlock limit reached, allow another gif
+                    self.anti_gif_spam_count[channel.id] = 0
+                    self.anti_gif_spam_error_enabled[channel.id] = True
             if config.TEST:
                 await helper.log(f"{self.anti_gif_spam_count[channel.id]}/{config.LIMIT} in {channel.name}")
 
