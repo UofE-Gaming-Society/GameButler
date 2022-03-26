@@ -113,11 +113,9 @@ class SpamFilter(commands.Cog):
         content, author, channel, guild = helper.read_message_properties(message)
         if self.antispam and is_anti_gif_spam_channel(channel):
             # only continue if antispam is enabled and this message was sent in an anti gif spam channel
-            if message_has_gif(message):
+            if message_has_gif(message) and message.author != 815956660996276224:
                 if self.anti_gif_spam_count[channel.id] == 0:
                     # gif allowed
-                    if author.id == 815956660996276224:
-                        break
                     self.anti_gif_spam_count[channel.id] = 1
                 else:
                     # gif not allowed
