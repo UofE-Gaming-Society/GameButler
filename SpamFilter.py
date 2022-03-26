@@ -127,7 +127,7 @@ class SpamFilter(commands.Cog):
                         self.anti_gif_spam_error_enabled[channel.id] = False
             else:
                 if len(content) >= 4:
-                    if self.anti_gif_spam_count[channel.id] != 0:
+                    if self.anti_gif_spam_count[channel.id] != 0 and message.author.id != 815956660996276224:
                         # message long enough to increment counter towards unlock limit
                         self.anti_gif_spam_count[channel.id] += 1
                 if self.anti_gif_spam_count[channel.id] > config.LIMIT:
