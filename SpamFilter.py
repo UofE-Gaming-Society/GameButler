@@ -119,7 +119,7 @@ class SpamFilter(commands.Cog):
                     self.anti_gif_spam_count[channel.id] = 1
                 else:
                     if message.author == 815956660996276224:
-                        break
+                        return
                     # gif not allowed
                     await message.delete()
                     await helper.log(f"Gif Spam detected in {channel.name} posted by {author.display_name}")
