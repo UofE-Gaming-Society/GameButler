@@ -8,12 +8,12 @@ git_update()
 start_bot() 
 {
     python3 botrunner.py # edit this if /bin/python == python3
-    readonly exit_code = $?
-    if [ exit_code -eq 2 ]
+    readonly EXIT_CODE=$?
+    if [ EXIT_CODE -eq 2 ]
     then
         start_bot
     fi
-    if [ exit_code -eq 6 ]
+    if [ EXIT_CODE -eq 6 ]
     then 
         git_update
         start_bot
