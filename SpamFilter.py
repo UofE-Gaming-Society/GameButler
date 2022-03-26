@@ -117,7 +117,7 @@ class SpamFilter(commands.Cog):
                 if self.anti_gif_spam_count[channel.id] == 0:
                     # gif allowed
                     if author.id == 815956660996276224:
-                        pass
+                        break
                     self.anti_gif_spam_count[channel.id] = 1
                 else:
                     # gif not allowed
