@@ -1,9 +1,10 @@
 import re
-from typing import Dict
+from typing import Dict, List
 
 from discord import Message, TextChannel, Member, Guild, Role
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
+from discord_slash.utils import manage_commands
 
 import config
 import helper
@@ -37,6 +38,8 @@ class SpamFilter(commands.Cog):
     antispam = config.ANTISPAM
     anti_adverts = config.ANTI_ADVERT
     sendErrorMessage = True
+    bullyTargets: List[int] = []
+    immunityTargets: List[int] = []
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -114,10 +117,13 @@ class SpamFilter(commands.Cog):
         if self.antispam and is_anti_gif_spam_channel(channel):
             # only continue if antispam is enabled and this message was sent in an anti gif spam channel
             if message_has_gif(message):
-                if self.anti_gif_spam_count[channel.id] == 0:
-                    # gif allowed
-                    self.anti_gif_spam_count[channel.id] = 1
-                else:
+                if author.id in self.bullyTargets:
+                    # insult them if they're being bullied by GLADoS
+                    await message.delete()
+                    await channel.send(f"{author.mention} {quotes.insult_quote()}")
+                elif author.id in self.immunityTargets:
+                    return
+                elif self.anti_gif_spam_count[channel.id] > 0:
                     # gif not allowed
                     await message.delete()
                     await helper.log(f"Gif Spam detected in {channel.name} posted by {author.display_name}")
@@ -125,11 +131,13 @@ class SpamFilter(commands.Cog):
                         # only shows error message once
                         await channel.send(f"No Gif spam in {channel.mention} {author.mention}")
                         self.anti_gif_spam_error_enabled[channel.id] = False
-            else:
+                else:
+                    # gif allowed
+                    self.anti_gif_spam_count[channel.id] = 1
+            elif self.anti_gif_spam_count[channel.id] > 0:
                 if len(content) >= 4:
-                    if self.anti_gif_spam_count[channel.id] != 0 and message.author.id != 815956660996276224:
-                        # message long enough to increment counter towards unlock limit
-                        self.anti_gif_spam_count[channel.id] += 1
+                    # message long enough to increment counter towards unlock limit
+                    self.anti_gif_spam_count[channel.id] += 1
                 if self.anti_gif_spam_count[channel.id] > config.LIMIT:
                     # unlock limit reached, allow another gif
                     self.anti_gif_spam_count[channel.id] = 0
@@ -162,6 +170,54 @@ class SpamFilter(commands.Cog):
             await author.remove_roles(new_member_role)
             await intro_channel.send(quotes.introduction(author.mention))
             await helper.log(f"Assigned member role to and introduced {author.name}")
+
+    @cog_ext.cog_slash(
+        name="bully",
+        description="Make GLADoS bully someone, or stop bullying them",
+        guild_ids=config.GUILD_IDS,
+        options=[
+            manage_commands.create_option(
+                name="target",
+                description="Target of GLADoS' impending bullying",
+                option_type=6,  # user
+                required=True
+            )
+        ]
+    )
+    @commands.has_role(config.BOT_ADMIN_ROLE)
+    async def bully(self, ctx: SlashContext, target: Member):
+        if target.id in self.bullyTargets:
+            self.bullyTargets.remove(target.id)
+            await ctx.send(f"Fine, {target.display_name} can post gifs in general again")
+        else:
+            self.bullyTargets.append(target.id)
+            await ctx.send(f"{target.display_name} shall be mercilessly bullied from now on")
+        await helper.log(f"{ctx.author.display_name} set GLADoS bullying for"
+                         f" {target.display_name} to {target.id in self.bullyTargets}")
+
+    @cog_ext.cog_slash(
+        name="tolerate",
+        description="Give some GLADoS immunity, or remove it",
+        guild_ids=config.GUILD_IDS,
+        options=[
+            manage_commands.create_option(
+                name="target",
+                description="Target of GLADoS' forgiveness",
+                option_type=6,  # user
+                required=True
+            )
+        ]
+    )
+    @commands.has_role(config.BOT_ADMIN_ROLE)
+    async def tolerate(self, ctx: SlashContext, target: Member):
+        if target.id in self.immunityTargets:
+            self.immunityTargets.remove(target.id)
+            await ctx.send(f"I will no longer ignore {target.display_name}'s transgressions")
+        else:
+            self.immunityTargets.append(target.id)
+            await ctx.send(f"{target.display_name} shall be tolerated, *for now*")
+        await helper.log(f"{ctx.author.display_name} set GLADoS toleration for"
+                         f" {target.display_name} to {target.id in self.immunityTargets}")
 
 
 def setup(bot: commands.Bot):
