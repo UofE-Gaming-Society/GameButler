@@ -128,7 +128,7 @@ def introduction(new_member_mention: str) -> str:
     # ugly indentation, feel free to fix
     return f"""
 Welcome {new_member_mention} to the server!!!
-Bot help command is ~help, feel free to use it in <#{config.BOTCHANNEL}> to add yourself to game roles so you can get notified 
+Feel free to use it in <#{config.BOTCHANNEL}> to add yourself to game roles so you can get notified 
 React to the relevant messages in <#{config.ROLECHANNEL}> to give yourself access to various channels on the server"""
 
 

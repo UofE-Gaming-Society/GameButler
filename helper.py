@@ -1,3 +1,4 @@
+import datetime
 from typing import Tuple
 
 import discord
@@ -8,7 +9,7 @@ import quotes
 
 
 async def log(message: str) -> None:
-    print(message)
+    print(f"{datetime.datetime.now()}: {message}")
 
 
 async def error(message: str, channel: discord.abc.Messageable) -> None:

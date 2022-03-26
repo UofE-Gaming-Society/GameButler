@@ -112,27 +112,27 @@ class SpamFilter(commands.Cog):
         # Gif antispam - Toggleable in config
         content, author, channel, guild = helper.read_message_properties(message)
         if self.antispam and is_anti_gif_spam_channel(channel):
-            if self.anti_gif_spam_count[channel.id] == 0:
-                # gif allowed
-                self.anti_gif_spam_count[channel.id] = int(message_has_gif(message))
-            else:
-                # gif not allowed
-                if message_has_gif(message):
-                    # is gif, delete
+            # only continue if antispam is enabled and this message was sent in an anti gif spam channel
+            if message_has_gif(message):
+                if self.anti_gif_spam_count[channel.id] == 0 and author.id != 261793184106020866:
+                    # gif allowed
+                    self.anti_gif_spam_count[channel.id] = 1
+                else:
+                    # gif not allowed
                     await message.delete()
                     await helper.log(f"Gif Spam detected in {channel.name} posted by {author.display_name}")
                     if self.anti_gif_spam_error_enabled[channel.id]:
                         # only shows error message once
                         await channel.send(f"No Gif spam in {channel.mention} {author.mention}")
                         self.anti_gif_spam_error_enabled[channel.id] = False
-                else:
-                    # is not gif, increment count
-                    if self.anti_gif_spam_count[channel.id] >= config.LIMIT:
-                        self.anti_gif_spam_count[channel.id] = 0
-                        self.anti_gif_spam_error_enabled[channel.id] = True
-                    elif len(content) >= 4:
-                        self.anti_gif_spam_count[channel.id] += 1
-
+            else:
+                if len(content) >= 4:
+                    # message long enough to increment counter towards unlock limit
+                    self.anti_gif_spam_count[channel.id] += 1
+                if self.anti_gif_spam_count[channel.id] > config.LIMIT:
+                    # unlock limit reached, allow another gif
+                    self.anti_gif_spam_count[channel.id] = 0
+                    self.anti_gif_spam_error_enabled[channel.id] = True
             if config.TEST:
                 await helper.log(f"{self.anti_gif_spam_count[channel.id]}/{config.LIMIT} in {channel.name}")
 
@@ -153,23 +153,14 @@ class SpamFilter(commands.Cog):
 
     async def i_have_read_the_rules(self, message: Message) -> None:
         content, author, channel, guild = helper.read_message_properties(message)
-        if channel.id == config.RULES:
-            if "i have read the rules" in content.lower():
-                try:
-                    member_role: Role = guild.get_role(config.MEMBERROLE)
-                    await author.add_roles(member_role)
-                    await helper.log(f"Assigned member role to {author.name}")
-                    try:
-                        new_member_role: Role = guild.get_role(config.NEWMEMBERROLE)
-                        await author.remove_roles(new_member_role)
-                    except:
-                        await helper.log(f"Unable to remove new member role from {author.display_name}")
-
-                    intro_channel = guild.get_channel(config.CHANNEL)
-                    await intro_channel.send(quotes.introduction(author.mention))
-                    await helper.log(f"Introduced {author.name}")
-                except:
-                    await helper.log("Unable to assign role")
+        member_role: Role = guild.get_role(config.MEMBERROLE)
+        new_member_role: Role = guild.get_role(config.NEWMEMBERROLE)
+        intro_channel = guild.get_channel(config.CHANNEL)
+        if channel.id == config.RULES and "i have read the rules" in content.lower() and new_member_role in author.roles:
+            await author.add_roles(member_role)
+            await author.remove_roles(new_member_role)
+            await intro_channel.send(quotes.introduction(author.mention))
+            await helper.log(f"Assigned member role to and introduced {author.name}")
 
 
 def setup(bot: commands.Bot):

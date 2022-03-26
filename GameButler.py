@@ -43,9 +43,8 @@ class GameButler(commands.Cog):
         if (author.id == 381756083028361220) and (channel.id == 369207326101602304):
             await channel.send(f"Moderation Rating: {random.randint(1, 9)}/10")
 
-        if author.id == 352458055763623947:  # moT
-            if random.random() < 0.05:
-                await message.delete(delay=300)
+        if author.id == 352458055763623947 and random.random() < 0.05:  # moT
+            await message.delete(delay=300)
 
     async def quotes(self, message: Message) -> None:
         content, author, channel, guild = helper.read_message_properties(message)
@@ -103,13 +102,25 @@ class GameButler(commands.Cog):
         self.bot.reload_extension(cog)
         await ctx.send("Reloaded " + cog)
 
+    @reload_cog.error
+    async def reload_cog_error(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, commands.errors.ExtensionNotLoaded):
+            await ctx.send("Unknown Cog: " + str(error))
+        else:
+            raise error
+
     @cog_ext.cog_slash(name="sync-commands", description="Try to force slash command sync", guild_ids=config.GUILD_IDS,
                        options=[])
     @commands.has_role(config.BOT_ADMIN_ROLE)
+    @commands.cooldown(1, 60.0, commands.BucketType.default)
     async def sync_commands(self, ctx: SlashContext):
         await helper.log(f"{ctx.author.display_name} triggered command resync")
-        await self.bot.slash.sync_all_commands()
+        await ctx.slash.sync_all_commands()
         await ctx.send("Re-synced all commands")
+
+    @sync_commands.error
+    async def sync_commands_error(self, ctx: commands.Context, error: commands.CommandError):
+        await ctx.send(f"Failed to sync commands! {error}")
 
     @cog_ext.cog_slash(name="git-pull", description="Do a git pull", guild_ids=config.GUILD_IDS, options=[])
     @commands.has_role(config.BOT_ADMIN_ROLE)

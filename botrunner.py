@@ -9,7 +9,6 @@ import config
 if __name__ == "__main__":
     bot = commands.Bot(command_prefix='~', intents=Intents.all(), case_insensitive=True)
     slash = SlashCommand(bot, sync_commands=True)
-    bot.slash = slash
 
     bot.load_extension("GameButler")
     bot.load_extension("GameRoleManager")
