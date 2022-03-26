@@ -1,5 +1,6 @@
 #!/bin/sh 
 
+
 git_update() 
 {
     git pull
@@ -8,12 +9,12 @@ git_update()
 start_bot() 
 {
     python3 botrunner.py # edit this if /bin/python == python3
-    if [$? = 2]
+    if [($? -eq 2) == 0]
     then
         start_bot()
     fi
-    if [$? = 6]
-    then
+    if [($? -eq 6) == 0]
+    then 
         git_update()
         start_bot()
     fi
