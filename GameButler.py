@@ -37,14 +37,6 @@ class GameButler(commands.Cog):
         await self.troll(message)
         await self.quotes(message)
 
-    async def troll(self, message: Message) -> None:
-        # this is the responsibility of Tom
-        content, author, channel, guild = helper.read_message_properties(message)
-        if (author.id == 381756083028361220) and (channel.id == 369207326101602304):
-            await channel.send(f"Moderation Rating: {random.randint(1, 9)}/10")
-
-        if author.id == 352458055763623947 and random.random() < 0.05:  # moT
-            await message.delete(delay=300)
 
     async def quotes(self, message: Message) -> None:
         content, author, channel, guild = helper.read_message_properties(message)
