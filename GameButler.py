@@ -34,7 +34,7 @@ class GameButler(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        await self.troll(message)
+        
         await self.quotes(message)
 
 
