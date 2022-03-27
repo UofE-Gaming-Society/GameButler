@@ -1,6 +1,5 @@
-import discord
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext, manage_commands
+from discord_slash import cog_ext, SlashContext
 
 import config
 import quotes
@@ -19,19 +18,12 @@ class MiscCommands(commands.Cog):
     # GLADoS insult
     @cog_ext.cog_slash(
         name="insult",
-        description="Ask GLADoS to insult someone",
+        description="Receive an insult from GLADoS",
         guild_ids=config.GUILD_IDS,
-        options=[
-            manage_commands.create_option(
-                name="target",
-                description="Target of GLADoS' impending insult",
-                option_type=6,  # user
-                required=True
-            )
-        ]
+        options=[]
     )
-    async def insult(self, ctx: SlashContext, target: discord.User):
-        await ctx.reply(f"{target.mention} {quotes.insult_quote()}")
+    async def insult(self, ctx: SlashContext):
+        await ctx.reply(quotes.insult_quote())
 
 
 def setup(bot: commands.Bot):
