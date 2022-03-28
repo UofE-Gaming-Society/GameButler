@@ -27,16 +27,24 @@ class GameButler(commands.Cog):
 
     # Chat Watch
     @commands.Cog.listener()
-    async def on_message(self, message: Message):
-        if type(message.channel) != discord.TextChannel:
-            return  # doesn't reply to DMs or group chats
-
+    async def on_message(self, message: Message):  
         if message.author == self.bot.user:
             return
 
+        if type(message.channel) != discord.TextChannel:
+            message_split = message.content.split(" ")
+            if message_split[0] == "--report":
+                if len(message_split) == 2 or len(message_split) == 1:
+                    await message.reply("Hi there! I see you are trying to report an incident that occured relating to GameSoc. To make a report, please use '--report @user <explanation>' with an explanation of the incident that occured, making sure to say whether it was online or offline. Thanks! :heart:")
+                user = message_split[1]
+                explanation = " ".join(message_split[2:])
+                ticket_channel = self.bot.get_channel(config.TICKET_CHANNEL)
+                await ticket_channel.send(f'A report was made against {user} with an explanation of {explanation}. <@COMMITTEE_ROLE> <@MODERATOR_ROLE>')
+                await message.reply("Your report has been sent to moderators and committee, we hope to talk to you soon! :heart:")
+            return  # doesn't reply to DMs or group chats that aren't incident repoorts
         
         await self.quotes(message)
-
+        return
 
     async def quotes(self, message: Message) -> None:
         content, author, channel, guild = helper.read_message_properties(message)
@@ -121,6 +129,7 @@ class GameButler(commands.Cog):
         output = subprocess.Popen("git pull", shell=True, stdout=subprocess.PIPE).communicate()[0]
         await helper.log(str(output))
         await ctx.send("Git pull completed")
+
 
 
 def setup(bot: commands.Bot):

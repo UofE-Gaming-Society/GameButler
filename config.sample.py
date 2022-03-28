@@ -2,10 +2,10 @@ import re
 from typing import List
 
 # bot token
-TOKEN = ""
+TOKEN = "OTU4MDcwOTI3MTYwMTE1Mjkx.YkH_FQ.I6IZBCuYnO_ciSMlVwH19D4zsyc"
 
 # server IDs for registering slash commands
-GUILD_IDS = [0]
+GUILD_IDS = [827253376227999804]
 
 # Role it can assign on member joining - int
 NEWMEMBERROLE = 0
@@ -55,4 +55,6 @@ LIMIT = 6
 ANTI_ADVERT = False
 
 # toggleable test mode
-TEST = True
+TEST = False
+
+TICKET_CHANNEL = 0
