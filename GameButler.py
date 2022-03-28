@@ -36,6 +36,8 @@ class GameButler(commands.Cog):
             if message_split[0] == "--report":
                 if len(message_split) == 2 or len(message_split) == 1:
                     await message.reply("Hi there! I see you are trying to report an incident that occured relating to GameSoc. To make a report, please use '--report @user <explanation>' with an explanation of the incident that occured, making sure to say whether it was online or offline. Thanks! :heart:")
+                    return
+                    
                 user = message_split[1]
                 explanation = " ".join(message_split[2:])
                 ticket_channel = self.bot.get_channel(config.TICKET_CHANNEL)
