@@ -2,7 +2,7 @@ import re
 from typing import List
 
 # bot token
-TOKEN = "OTU4MDcwOTI3MTYwMTE1Mjkx.YkH_FQ.I6IZBCuYnO_ciSMlVwH19D4zsyc"
+TOKEN = ""
 
 # server IDs for registering slash commands
 GUILD_IDS = [827253376227999804]
