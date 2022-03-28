@@ -39,7 +39,7 @@ class GameButler(commands.Cog):
                 user = message_split[1]
                 explanation = " ".join(message_split[2:])
                 ticket_channel = self.bot.get_channel(config.TICKET_CHANNEL)
-                await ticket_channel.send(f'A report was made against {user} with an explanation of {explanation}. <@COMMITTEE_ROLE> <@MODERATOR_ROLE>')
+                await ticket_channel.send(f'A report was made against {user} with an explanation of {explanation}. <@{config.COMMITTEE_ROLE}> <@{config.MODERATOR_ROLE}>')
                 await message.reply("Your report has been sent to moderators and committee, we hope to talk to you soon! :heart:")
             return  # doesn't reply to DMs or group chats that aren't incident repoorts
         

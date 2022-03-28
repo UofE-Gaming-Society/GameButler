@@ -5,7 +5,7 @@ from typing import List
 TOKEN = ""
 
 # server IDs for registering slash commands
-GUILD_IDS = [827253376227999804]
+GUILD_IDS = [0]
 
 # Role it can assign on member joining - int
 NEWMEMBERROLE = 0
@@ -58,3 +58,7 @@ ANTI_ADVERT = False
 TEST = False
 
 TICKET_CHANNEL = 0
+
+COMMITTEE_ROLE = 0
+
+MODERATOR_ROLE = 0
