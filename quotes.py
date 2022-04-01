@@ -32,7 +32,7 @@ vgmgRules = """**-Rules-**
 lemonade = """
 ```All right, I've been thinking. When life gives you lemons? Don't make lemonade. 
 Make life take the lemons back! Get mad! 'I don't want your damn lemons! What am I supposed to do with these?`
-Demand to see life's manager! Make life rue the day it thought it could give Gurg lemons! Do you know who I am? 
+Demand to see life's manager! Make life rue the day it thought it could give Maya lemons! Do you know who I am? 
 I'm the man who's going to burn your house down! With the lemons! 
 I'm going to get my engineers to invent a combustible lemon that burns your house down!```"""
 
@@ -56,7 +56,7 @@ glados_quotes = [
 lemon_quotes = [
     "Welcome, gentlemen, to Edinburgh Gamesoc. V-Tubers, Memers, Gamers--you're here because we want the best, "
     "and you are it. So: Who is ready to play some games?",
-    "Now, you already met one another on the limo ride over, so let me introduce myself. I'm Gurg. I own the place.",
+    "Now, you already met one another on the limo ride over, so let me introduce myself. I'm Maya. I own the place.",
     "They say great gaming is built on the shoulders of giants. Not here. At Gamesoc, we do all our gaming from level "
     "1. No hand holding. "
 ]
@@ -128,7 +128,7 @@ def introduction(new_member_mention: str) -> str:
     # ugly indentation, feel free to fix
     return f"""
 Welcome {new_member_mention} to the server!!!
-Feel free to use it in <#{config.BOTCHANNEL}> to add yourself to game roles so you can get notified 
+Feel free to use my slash commands in <#{config.BOTCHANNEL}> to add yourself to game roles so you can get notified 
 React to the relevant messages in <#{config.ROLECHANNEL}> to give yourself access to various channels on the server"""
 
 
