@@ -93,8 +93,9 @@ class GameButler(commands.Cog):
                         await message.reply(f"{user} now has {karma.karma} karma {reason}")
                         found = True
                 if not found:
-                    karma_list.append(Karma(user))
-                    await message.reply(f"{user} now has 0 karma {reason}")
+                    new_karma = Karma(user)
+                    karma_list.append(new_karma)
+                    await message.reply(f"{user} now has {new_karma} karma {reason}")
                 no_irc = True
                     
             if random_int < 5 and not no_irc:
