@@ -17,7 +17,7 @@ import quotes
 karma_list = []
 class Karma():
     def __init__(self, user):
-        self.karma = 0
+        self.karma = random.randint(1, random.randint(1, 1000))
         self.user_name = user
 
 class GameButler(commands.Cog):
