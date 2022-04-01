@@ -17,7 +17,7 @@ import quotes
 karma_list = []
 class Karma():
     def __init__(self, user):
-        self.karma = random.randint(1, random.randint(1, 100))
+        self.karma = 0
         self.user_name = user
 
 class GameButler(commands.Cog):
@@ -72,8 +72,9 @@ class GameButler(commands.Cog):
                         await message.reply(f"{user} now has {karma.karma} karma {reason}")
                         found = True
                 if not found:
-                    karma_list.append(Karma(user))
-                    await message.reply(f"{user} now has 1 karma {reason}")
+                    new_karma = Karma(user)
+                    karma_list.append(new_karma)
+                    await message.reply(f"{user} now has {new_karma} karma {reason}")
                 no_irc = True
 
             elif "--" in message.content:
