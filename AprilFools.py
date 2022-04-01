@@ -10,8 +10,7 @@ import config
 
 
 class AprilFools(commands.Cog):
-    class AprilFools(commands.Cog):
-        karma_scores: Dict[str, int] = {}
+    karma_scores: Dict[str, int] = {}
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
