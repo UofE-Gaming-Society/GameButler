@@ -57,7 +57,7 @@ class GameButler(commands.Cog):
                     await webhook_balls.send(message.content, username=user_name, avatar_url=user_picture)
                     await message.delete()
                 return
-            if random_int >= 40 and random_int <= 50:
+            if random_int >= 47 and random_int <= 50:
                 message_split = message.content.split(" ")
                 random_word = random.randint(0, len(message_split) - 1)
                 message_split[random_word] = "butt"
