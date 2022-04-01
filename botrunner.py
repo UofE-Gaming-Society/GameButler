@@ -15,6 +15,7 @@ if __name__ == "__main__":
     bot.load_extension("SpamFilter")
     bot.load_extension("MiscCommands")
     bot.load_extension("ErrorHandler")
+    bot.load_extension("AprilFools")
 
     bot.git_update = False
     bot.restart = False
