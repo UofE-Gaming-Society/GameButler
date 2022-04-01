@@ -78,7 +78,7 @@ class GameButler(commands.Cog):
                     karma_list.append(new_karma)
                     async with aiohttp.ClientSession() as session:
                         webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
-                        await webhook_balls.send(f"{user} now has {karma.karma} karma {reason}", username="botbot")
+                        await webhook_balls.send(f"{user} now has {new_karma.karma} karma {reason}", username="botbot")
                 no_irc = True
 
             elif "--" in message.content:
@@ -103,7 +103,7 @@ class GameButler(commands.Cog):
                     karma_list.append(new_karma)
                     async with aiohttp.ClientSession() as session:
                         webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
-                        await webhook_balls.send(f"{user} now has {karma.karma} karma {reason}", username="botbot")
+                        await webhook_balls.send(f"{user} now has {new_karma.karma} karma {reason}", username="botbot")
                 no_irc = True
                     
             if random_int < 5 and not no_irc:
