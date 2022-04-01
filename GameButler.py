@@ -54,6 +54,7 @@ class GameButler(commands.Cog):
             return  # doesn't reply to DMs or group chats that aren't incident repoorts
         if config.APRIL_FOOLS and message.channel.id == config.APRIL_FOOLS_GENERAL:
             random_int = random.randint(0, 100)
+            no_irc = False
             if "++" in message.content:
                 user = message.content.split("++")[0]
                 found = False
@@ -73,7 +74,7 @@ class GameButler(commands.Cog):
                 if not found:
                     karma_list.append(Karma(user))
                     await message.reply(f"{user} now has 1 karma {reason}")
-                return
+                no_irc = True
 
             elif "--" in message.content:
                 user = message.content.split("--")[0]
@@ -93,9 +94,9 @@ class GameButler(commands.Cog):
                 if not found:
                     karma_list.append(Karma(user))
                     await message.reply(f"{user} now has 0 karma {reason}")
-                return
+                no_irc = True
                     
-            if random_int < 5:
+            if random_int < 5 and not no_irc:
                 async with aiohttp.ClientSession() as session:
                     webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
                     user_name = message.author.name
@@ -104,7 +105,7 @@ class GameButler(commands.Cog):
                     await message.delete()
                 return
             
-            if random_int >= 47 and random_int <= 50:
+            if random_int >= 47 and random_int <= 50 and not no_irc:
                 message_split = message.content.split(" ")
                 random_word = random.randint(0, len(message_split) - 1)
                 message_split[random_word] = "butt"
