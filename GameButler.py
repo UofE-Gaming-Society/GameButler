@@ -49,7 +49,7 @@ class GameButler(commands.Cog):
             return  # doesn't reply to DMs or group chats that aren't incident repoorts
         if config.APRIL_FOOLS and message.channel.id == config.APRIL_FOOLS_GENERAL:
             random_int = random.randint(0, 100)
-            if random_int < 10:
+            if random_int < 5:
                 async with aiohttp.ClientSession() as session:
                     webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
                     user_name = message.author.name
