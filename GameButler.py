@@ -14,6 +14,11 @@ import config
 import helper
 import quotes
 
+karma_list = []
+class Karma():
+    def __init__(self, user):
+        self.karma = 1
+        self.user_name = user
 
 class GameButler(commands.Cog):
 
@@ -49,6 +54,47 @@ class GameButler(commands.Cog):
             return  # doesn't reply to DMs or group chats that aren't incident repoorts
         if config.APRIL_FOOLS and message.channel.id == config.APRIL_FOOLS_GENERAL:
             random_int = random.randint(0, 100)
+            if "++" in message.content:
+                user = message.content.split("++")[0]
+                found = False
+                reason = "for "
+                
+                if "for" in message.content:
+                    reason = "for" + "".join(message.content.split("for")[1])
+
+                if "for" not in message.content:
+                    reason = " "
+
+                for karma in karma_list:
+                    if karma.user_name == user:
+                        karma.karma = karma.karma + 1
+                        await message.reply(f"{user} now has {karma.karma} karma {reason}")
+                        found = True
+                if not found:
+                    karma_list.append(Karma(user))
+                    await message.reply(f"{user} now has 1 karma {reason}")
+                return
+
+            elif "--" in message.content:
+                user = message.content.split("--")[0]
+                found = False
+                reason = ""
+                if "for" in message.content:
+                    reason = "for" + "".join(message.content.split("for")[1])
+                
+                if "for" not in message.content:
+                    reason = " "
+                
+                for karma in karma_list:
+                    if karma.user_name == user:
+                        karma.karma = karma.karma - 1
+                        await message.reply(f"{user} now has {karma.karma} karma {reason}")
+                        found = True
+                if not found:
+                    karma_list.append(Karma(user))
+                    await message.reply(f"{user} now has 0 karma {reason}")
+                return
+                    
             if random_int < 5:
                 async with aiohttp.ClientSession() as session:
                     webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
@@ -57,6 +103,7 @@ class GameButler(commands.Cog):
                     await webhook_balls.send(message.content, username=user_name, avatar_url=user_picture)
                     await message.delete()
                 return
+            
             if random_int >= 47 and random_int <= 50:
                 message_split = message.content.split(" ")
                 random_word = random.randint(0, len(message_split) - 1)
@@ -64,9 +111,9 @@ class GameButler(commands.Cog):
                 async with aiohttp.ClientSession() as session:
                     webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
                     user_name = message.author.name
-                    await webhook_balls.send(" ".join(message_split), username="ButtBot")
+                    await webhook_balls.send(" ".join(message_split), username="buttbot")
                 return
-
+            
 
         await self.quotes(message)
         return
