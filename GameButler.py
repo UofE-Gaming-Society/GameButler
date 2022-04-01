@@ -1,11 +1,14 @@
+import aiohttp
 import random
 import subprocess
 from typing import List, Tuple
 
 import discord
 from discord import Message
+from discord import Webhook, AsyncWebhookAdapter
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
+
 
 import config
 import helper
@@ -44,7 +47,27 @@ class GameButler(commands.Cog):
                 await ticket_channel.send(f'A report was made against {user} with an explanation of {explanation}. <@&{config.COMMITTEE_ROLE}> <@&{config.MODERATOR_ROLE}>')
                 await message.reply("Your report has been sent to moderators and committee, we hope to talk to you soon! :heart:")
             return  # doesn't reply to DMs or group chats that aren't incident repoorts
-        
+        if config.APRIL_FOOLS and message.channel.id == config.APRIL_FOOLS_GENERAL:
+            random_int = random.randint(0, 100)
+            if random_int < 10:
+                async with aiohttp.ClientSession() as session:
+                    webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
+                    user_name = message.author.name
+                    user_picture = message.author.avatar_url
+                    await webhook_balls.send(message.content, username=user_name, avatar_url=user_picture)
+                    await message.delete()
+                return
+            if random_int >= 40 and random_int <= 50:
+                message_split = message.content.split(" ")
+                random_word = random.randint(0, len(message_split) - 1)
+                message_split[random_word] = "butt"
+                async with aiohttp.ClientSession() as session:
+                    webhook_balls = Webhook.from_url(config.BALLS_WEBHOOK, adapter=AsyncWebhookAdapter(session))
+                    user_name = message.author.name
+                    await webhook_balls.send(" ".join(message_split), username="ButtBot")
+                return
+
+
         await self.quotes(message)
         return
 
