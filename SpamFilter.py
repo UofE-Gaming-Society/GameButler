@@ -9,6 +9,10 @@ import config
 import helper
 import quotes
 
+GIF_SEARCH_PATTERN = re.compile(
+    r"[(http(s)?)://(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)\.gif",
+    re.IGNORECASE)  # https://regexr.com/39nr7
+
 
 def is_anti_gif_spam_channel(channel: TextChannel) -> bool:
     return channel.id in config.ANTI_GIF_CHANNELS
@@ -20,6 +24,11 @@ def message_has_gif(message: Message):
     # checks for disallowed gif patterns using regex, defined in config
     if any([pattern.search(content) is not None for pattern in config.ANTI_GIF_PATTERNS]):
         return True
+    if re.search(GIF_SEARCH_PATTERN, content) is not None:
+        return True
+    for attachment in message.attachments:
+        if attachment.content_type == "image/gif":
+            return True
     return False
 
 

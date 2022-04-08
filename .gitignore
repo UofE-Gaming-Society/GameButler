@@ -131,3 +131,4 @@ dmypy.json
 config_template.py
 
 config.py
+.idea/
