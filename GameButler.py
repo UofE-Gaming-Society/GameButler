@@ -71,15 +71,6 @@ class GameButler(commands.Cog):
                 await message.reply(response)
                 break
 
-    @cog_ext.cog_slash(name="shutdown", description="Shutdown this bot, DO NOT USE", guild_ids=config.GUILD_IDS,
-                       options=[])
-    @commands.has_role(config.BOT_ADMIN_ROLE)
-    async def shutdown(self, ctx: SlashContext):
-        self.bot.git_update = False
-        self.bot.restart = False
-        await ctx.send("Shutting down...")
-        await self.bot.close()
-
     @cog_ext.cog_slash(name="restart", description="Restart this bot", guild_ids=config.GUILD_IDS, options=[])
     @commands.has_role(config.BOT_ADMIN_ROLE)
     async def restart(self, ctx: SlashContext):
