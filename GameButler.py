@@ -3,9 +3,9 @@ import subprocess
 from typing import List, Tuple
 
 import discord
-from discord import Message
+from discord import Message, Interaction
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext
+from discord import app_commands
 
 import config
 import helper
@@ -13,44 +13,30 @@ import quotes
 
 
 class GameButler(commands.Cog):
+    """Cog for managing bot-wide functionality."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # Sets bot activity and posts bot name and id.
     @commands.Cog.listener()
     async def on_ready(self):
+        """Sets bot activity and logs startup messages."""
         await helper.log(f"Initialising {self.bot.user.name} #{self.bot.user.id}")
         await helper.log(random.choice(quotes.glados_startup))
         await helper.log('------')
         await self.bot.change_presence(activity=discord.Game(name=random.choice(quotes.activities)))
-
-    # Chat Watch
+    
     @commands.Cog.listener()
-    async def on_message(self, message: Message):  
-        if message.author == self.bot.user:
+    async def on_message(self, message: discord.Message):
+        # Ignore messages from bots
+        if message.author.bot:
             return
 
-        if type(message.channel) != discord.TextChannel:
-            message_split = message.content.split(" ")
-            if message_split[0] == "--report":
-                if len(message_split) == 2 or len(message_split) == 1:
-                    await message.reply("Hi there! I see you are trying to report an incident that occured relating to GameSoc. To make a report, please use '--report @user <explanation>' with an explanation of the incident that occured, making sure to say whether it was online or offline. Thanks! :heart:")
-                    return
-                    
-                user = message_split[1]
-                explanation = " ".join(message_split[2:])
-                ticket_channel = self.bot.get_channel(config.TICKET_CHANNEL)
-                await ticket_channel.send(f'A report was made against {user} with an explanation of {explanation}. <@&{config.COMMITTEE_ROLE}> <@&{config.MODERATOR_ROLE}>')
-                await message.reply("Your report has been sent to moderators and committee, we hope to talk to you soon! :heart:")
-            return  # doesn't reply to DMs or group chats that aren't incident repoorts
+        # Ignore messages in DMs
+        if isinstance(message.channel, discord.DMChannel):
+            return
 
-        await self.quotes(message)
-        return
-
-    async def quotes(self, message: Message) -> None:
-        content, author, channel, guild = helper.read_message_properties(message)
-
+        # Define your mappings
         mappings: List[Tuple[str, str]] = [
             ("99", random.choice(quotes.brooklyn_99_quotes)),
             ("glados", f"```{random.choice(quotes.glados_quotes)}```"),
@@ -58,72 +44,117 @@ class GameButler(commands.Cog):
             ("if life gives you lemons", quotes.lemonade),
             ("fortune", f"```{quotes.fortune()}```"),
             ("moo", f"```{quotes.moo()}```"),
-            ("meeba", quotes.misha),
-            ("misha", quotes.misha),
-            ("f", f"{author.mention} sends their respects"),
+            ("f", f"{message.author.mention} sends their respects"),
             ("awooga", quotes.copypasta1),
             ("divide by zero", quotes.error_quote()),
             (f"<@!{self.bot.user.id}>", quotes.insult_quote())
         ]
 
-        for (trigger, response) in mappings:
-            if content.lower() == trigger:
-                await message.reply(response)
+        trigger_lc = message.content.lower()
+        for (key, response) in mappings:
+            if trigger_lc == key.lower():
+                await message.channel.send(response)
                 break
 
-    @cog_ext.cog_slash(name="restart", description="Restart this bot", guild_ids=config.GUILD_IDS, options=[])
-    @commands.has_role(config.BOT_ADMIN_ROLE)
-    async def restart(self, ctx: SlashContext):
+    @app_commands.command(name="restart", description="Restart this bot")
+    @app_commands.guilds(*[discord.Object(id=guild_id) for guild_id in config.GUILD_IDS])
+    @app_commands.checks.has_role(config.BOT_ADMIN_ROLE)
+    async def restart(self, interaction: Interaction):
+        """Restarts the bot."""
         self.bot.git_update = False
         self.bot.restart = True
-        await ctx.send("Restarting...")
+        await interaction.response.send_message("Restarting...", ephemeral=True)
         await self.bot.close()
 
-    @cog_ext.cog_slash(name="update", description="Update this bot", guild_ids=config.GUILD_IDS, options=[])
-    @commands.has_role(config.BOT_ADMIN_ROLE)
-    async def update(self, ctx: SlashContext):
+    @app_commands.command(name="update", description="Update this bot")
+    @app_commands.guilds(*[discord.Object(id=guild_id) for guild_id in config.GUILD_IDS])
+    @app_commands.checks.has_role(config.BOT_ADMIN_ROLE)
+    async def update(self, interaction: Interaction):
+        """Updates the bot via git pull and restarts."""
         self.bot.git_update = True
         self.bot.restart = True
-        await ctx.send("Updating...")
+        await interaction.response.send_message("Updating...", ephemeral=True)
         await self.bot.close()
 
-    @cog_ext.cog_slash(name="reload-cog", description="Reload a specific Cog", guild_ids=config.GUILD_IDS,
-                       options=[helper.string_slash_command_option("cog", "Name of Cog to reload")])
-    @commands.has_role(config.BOT_ADMIN_ROLE)
-    async def reload_cog(self, ctx: SlashContext, cog: str):
-        await helper.log(f"{ctx.author.display_name} reloaded {cog}")
-        self.bot.reload_extension(cog)
-        await ctx.send("Reloaded " + cog)
+    @app_commands.command(name="reload-cog", description="Reload a specific Cog")
+    @app_commands.describe(cog="The name of the cog to reload")
+    @app_commands.guilds(*[discord.Object(id=guild_id) for guild_id in config.GUILD_IDS])
+    @app_commands.checks.has_role(config.BOT_ADMIN_ROLE)
+    async def reload_cog(self, interaction: Interaction, cog: str):
+        """Reloads a specific cog."""
+        try:
+            self.bot.reload_extension(cog)
+            await helper.log(f"{interaction.user.display_name} reloaded {cog}")
+            await interaction.response.send_message(f"Reloaded {cog}", ephemeral=True)
+        except commands.errors.ExtensionNotLoaded:
+            await interaction.response.send_message(f"Unknown Cog: {cog}", ephemeral=True)
 
-    @reload_cog.error
-    async def reload_cog_error(self, ctx: commands.Context, error: commands.CommandError):
-        if isinstance(error, commands.errors.ExtensionNotLoaded):
-            await ctx.send("Unknown Cog: " + str(error))
-        else:
-            raise error
+    @app_commands.command(name="sync-commands", description="Force slash command sync")
+    @app_commands.guilds(*[discord.Object(id=guild_id) for guild_id in config.GUILD_IDS])
+    @app_commands.checks.has_role(config.BOT_ADMIN_ROLE)
+    async def sync_commands(self, interaction: Interaction):
+        """Forces a sync of all slash commands."""
+        await helper.log(f"{interaction.user.display_name} triggered command resync")
+        await self.bot.tree.sync()
+        await interaction.response.send_message("Re-synced all commands", ephemeral=True)
 
-    @cog_ext.cog_slash(name="sync-commands", description="Try to force slash command sync", guild_ids=config.GUILD_IDS,
-                       options=[])
-    @commands.has_role(config.BOT_ADMIN_ROLE)
-    @commands.cooldown(1, 60.0, commands.BucketType.default)
-    async def sync_commands(self, ctx: SlashContext):
-        await helper.log(f"{ctx.author.display_name} triggered command resync")
-        await ctx.slash.sync_all_commands()
-        await ctx.send("Re-synced all commands")
-
-    @sync_commands.error
-    async def sync_commands_error(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.send(f"Failed to sync commands! {error}")
-
-    @cog_ext.cog_slash(name="git-pull", description="Do a git pull", guild_ids=config.GUILD_IDS, options=[])
-    @commands.has_role(config.BOT_ADMIN_ROLE)
-    async def git_pull(self, ctx: SlashContext):
-        await helper.log(f"{ctx.author.display_name} began a git pull")
+    @app_commands.command(name="git-pull", description="Perform a git pull")
+    @app_commands.guilds(*[discord.Object(id=guild_id) for guild_id in config.GUILD_IDS])
+    @app_commands.checks.has_role(config.BOT_ADMIN_ROLE)
+    async def git_pull(self, interaction: Interaction):
+        """Performs a git pull to update the bot."""
+        await helper.log(f"{interaction.user.display_name} began a git pull")
         output = subprocess.Popen("git pull", shell=True, stdout=subprocess.PIPE).communicate()[0]
-        await helper.log(str(output))
-        await ctx.send("Git pull completed")
+        await helper.log(str(output.decode("utf-8")))
+        await interaction.response.send_message("Git pull completed", ephemeral=True)
+
+    @app_commands.command(name="quote", description="Respond with a random quote")
+    @app_commands.describe(trigger="The trigger word for the quote")
+    @app_commands.guilds(*[discord.Object(id=guild_id) for guild_id in config.GUILD_IDS])
+    async def quote(self, interaction: Interaction, trigger: str):
+        """Responds with a random quote based on the trigger."""
+        mappings: List[Tuple[str, str]] = [
+            ("99", random.choice(quotes.brooklyn_99_quotes)),
+            ("glados", f"```{random.choice(quotes.glados_quotes)}```"),
+            ("lemons", f"```{random.choice(quotes.lemon_quotes)}```"),
+            ("if life gives you lemons", quotes.lemonade),
+            ("fortune", f"```{quotes.fortune()}```"),
+            ("moo", f"```{quotes.moo()}```"),
+            ("f", f"{interaction.user.mention} sends their respects"),
+            ("awooga", quotes.copypasta1),
+            ("divide by zero", quotes.error_quote()),
+            (f"<@!{self.bot.user.id}>", quotes.insult_quote())
+        ]
+
+        trigger_lc = trigger.lower()
+        for (key, response) in mappings:
+            if trigger_lc == key.lower():
+                await interaction.response.send_message(response, ephemeral=True)
+                return
+
+        await interaction.response.send_message("No matching quote found.", ephemeral=True)
+
+    @app_commands.command(name="report", description="Report an incident")
+    @app_commands.describe(user="The user being reported", explanation="Explanation of the incident")
+    @app_commands.guilds(*[discord.Object(id=guild_id) for guild_id in config.GUILD_IDS])
+    async def report(self, interaction: Interaction, user: str, explanation: str):
+        """Allows users to report incidents."""
+        ticket_channel = self.bot.get_channel(config.TICKET_CHANNEL)
+        if ticket_channel:
+            await ticket_channel.send(
+                f"A report was made against {user} with an explanation of: {explanation}. "
+                f"<@&{config.COMMITTEE_ROLE}> <@&{config.MODERATOR_ROLE}>"
+            )
+            await interaction.response.send_message(
+                "Your report has been sent to moderators and committee. We hope to talk to you soon! ❤️",
+                ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                "Unable to send the report. Please contact a moderator directly.", ephemeral=True
+            )
 
 
-
-def setup(bot: commands.Bot):
-    bot.add_cog(GameButler(bot))
+async def setup(bot: commands.Bot):
+    """Sets up the GameButler cog."""
+    await bot.add_cog(GameButler(bot))

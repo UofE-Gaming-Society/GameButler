@@ -1,33 +1,55 @@
 import discord
 from discord.ext import commands
-from discord_slash import SlashContext
-from discord_slash.error import SlashCommandError
+from discord import app_commands
 
 import helper
 
 
 class ErrorHandler(commands.Cog):
+    """Cog for handling errors globally."""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
+        # Register the error handler for slash commands
+        self.bot.tree.on_error = self.on_app_command_error
 
     @commands.Cog.listener()
-    async def on_slash_command_error(self, ctx: SlashContext, error: SlashCommandError):
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Handles errors for old-style commands."""
         if isinstance(error, commands.CommandNotFound):
-            message = f"Command not found"
+            message = "Command not found."
         elif isinstance(error, commands.CommandOnCooldown):
-            message = f"This command is on cooldown, try again after {round(error.retry_after, 1)} seconds"
+            message = f"This command is on cooldown. Try again after {round(error.retry_after, 1)} seconds."
         elif isinstance(error, commands.MissingPermissions):
-            message = f"You do not have the required permissions to use this command"
+            message = "You do not have the required permissions to use this command."
         elif isinstance(error, commands.MissingRole):
-            role: discord.Role = ctx.guild.get_role(error.missing_role)
-            message = f"You do not have the required {role.mention} role to use this command"
+            message = f"You do not have the required role to use this command."
         else:
             await helper.error(str(error), ctx.channel)
             return
 
-        await ctx.send(message, allowed_mentions=discord.AllowedMentions(users=[ctx.author]))
+        await ctx.send(message)
+
+    async def on_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        """Handles errors for slash commands."""
+        if isinstance(error, app_commands.CommandNotFound):
+            message = "Command not found."
+        elif isinstance(error, app_commands.CommandOnCooldown):
+            message = f"This command is on cooldown. Try again after {round(error.retry_after, 1)} seconds."
+        elif isinstance(error, app_commands.MissingPermissions):
+            message = "You do not have the required permissions to use this command."
+        elif isinstance(error, app_commands.MissingRole):
+            message = "You do not have the required role to use this command."
+        else:
+            await helper.error(str(error), interaction.channel)
+            await interaction.response.send_message(
+                "An unexpected error occurred. The issue has been logged.", ephemeral=True
+            )
+            return
+
+        await interaction.response.send_message(message, ephemeral=True)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(ErrorHandler(bot))
+async def setup(bot: commands.Bot):
+    """Sets up the ErrorHandler cog."""
+    await bot.add_cog(ErrorHandler(bot))
