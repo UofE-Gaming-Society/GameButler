@@ -56,7 +56,7 @@ glados_quotes = [
 lemon_quotes = [
     "Welcome, gentlemen, to Edinburgh Gamesoc. V-Tubers, Memers, Gamers--you're here because we want the best, "
     "and you are it. So: Who is ready to play some games?",
-    "Now, you already met one another on the limo ride over, so let me introduce myself. I'm Maya. I own the place.",
+    "Now, you already met one another on the limo ride over, so let me introduce myself. I'm Martyna. I own the place.",
     "They say great gaming is built on the shoulders of giants. Not here. At Gamesoc, we do all our gaming from level "
     "1. No hand holding. "
 ]
