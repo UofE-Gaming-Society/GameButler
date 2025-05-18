@@ -123,6 +123,17 @@ activities = [
     'Ping @TTChowder'
 ]
 
+cowfiles = [
+    "apt", "bud-frogs", "bunny", "calvin", "cheese", "cock", "cower", "daemon",
+    "default", "dragon", "dragon-and-cow", "duck", "elephant", "elephant-in-snake",
+    "eyes", "flaming-sheep", "fox", "ghostbusters", "gnu", "hellokitty", "kangaroo",
+    "kiss", "koala", "kosh", "luke-koala", "mech-and-cow", "milk", "moofasa", "moose",
+    "pony", "pony-smaller", "ren", "sheep", "skeleton", "snowman", "stegosaurus",
+    "stimpy", "suse", "three-eyes", "turkey", "turtle", "tux", "unipony",
+    "unipony-smaller", "vader", "vader-koala", "www"
+]
+
+
 
 def introduction(new_member_mention: str) -> str:
     # ugly indentation, feel free to fix
@@ -135,7 +146,7 @@ React to the relevant messages in <#{config.ROLECHANNEL}> to give yourself acces
 def fortune() -> str:
     if config.TEST:
         return "fortune"
-    return subprocess.check_output('fortune | cowsay', shell=True, universal_newlines=True)
+    return subprocess.check_output('fortune | cowsay -f ' + random.choice(cowfiles), shell=True, universal_newlines=True)
 
 
 def moo() -> str:
